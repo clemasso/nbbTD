@@ -1,0 +1,22 @@
+Package: nbbTD
+Title: Multiprocessing NBB-customized temporal disaggregation of time serie
+Version: 0.1.0
+Authors@R: 
+    person(given = "Corentin",
+           family = "Lemasson",
+           role = c("aut", "cre"),
+           email = "corentin.lemasson@nbb.be")
+Description: Perform multi-processing temporal disaggregation of an annual to quarterly or monthly set of time series. 
+	     The focus is on the (enhanced) Denton PFD method defined in State Space form. Hence, the user can also add 
+	     outliers (level shift) in the Benchmark-to-Indicator (BI) ratio and import infra-annual BI ratio manually for 
+	     some periods. In addition to Denton PDF method, Chow-Lin method and its variants can also be used.
+Depends: R (>= 3.6.0)
+Imports: data.table, lubridate, zoo, openxlsx, rjd3toolkit, rjd3bench, rjd3sts, rjd3tramoseats, forecast, shiny
+License: EUPL
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+RoxygenNote: 7.0.2
