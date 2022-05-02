@@ -2,8 +2,8 @@
 % Please edit documentation in R/config.R
 \name{setConfig_default}
 \alias{setConfig_default}
-\title{Creating a config object to be used as full input in the functions 'nbbTD',
-or as part in the functions 'nbbTDDenton', 'nbbTDCLvar'.}
+\title{Creating a config object to be used as input in the functions 'multiTD',
+or as part in the functions 'multiTDDenton', 'multiTDCLvar'.}
 \usage{
 setConfig_default(
   model = NULL,
@@ -14,13 +14,15 @@ setConfig_default(
 }
 \arguments{
 \item{model}{a data.frame object with 2 columns: 'series_name' and
-'model' containing the TD model to use for each series. The
-data.frame should contain at least one column. If you attempt
+'model' containing the TD model to use for each series.
+Currently, the following models are handled: 'edenton',
+'denton', 'chow-lin', 'fernandez', 'litterman'.
+The data.frame should contain at least one row. If you attempt
 to use the same model for all series, you can use the keyword
-'_ALL_'. If you do not defined a model for each series,
-'eDenton' is used by default with a warning message.
-If model = NULL, a data.frame is created by default with
-'eDenton' defined for each series.}
+'_ALL_'. If you do not define a model for each series,
+'edenton' is used by default for the unspecified series
+with a warning. If model = NULL, a data.frame is created
+with 'eDenton' defined for each series by default.}
 
 \item{f_bi_manual}{a data.frame object with 3 columns: 'series_name',
 'f_T1' and 'f_T2' containing manual forecast of annual
@@ -34,20 +36,27 @@ If model = NULL, a data.frame is created by default with
 \item{bi_q_outliers}{a data.frame object with 4 columns: 'series_name',
 'year', quarter_month' and 'intensity' containing manual
 outliers (and their intensity). If the data.frame is
-empty or if bi_q_outliers = NULL, no outlier are considered.}
+empty or if bi_q_outliers = NULL, no outlier are considered.
+The column 'quarter_month' must be filled with values
+from 1 to 4 for quarterly data and with values from 1 to 12
+for monthly data. The column 'intensity' allows the user
+to set up the intensity of the outlier. The default value
+is 10 and a value of 1 means no outlier. The scale
+between 1 to 10 is not linear but exponential.}
 
 \item{bi_q_manual}{a data.frame object with 14 columns: 'series_name',
 'year', 'q1_m1', ..., 'q4_m4', 'm5', ..., 'm12' containing
 manual BI ratios (on an infra-annual basis). If the
 data.frame is empty or if bi_q_manual = NULL, no manual
-BI ratios are considered.}
+BI ratios are considered. The columns 'm5' to 'm12' must
+remain empty in case of quarterly data.}
 }
 \value{
 returns an object of class 'nbb.dsc.td.multiproc.config'
 }
 \description{
-Creating a config object to be used as full input in the functions 'nbbTD',
-or as part in the functions 'nbbTDDenton', 'nbbTDCLvar'.
+Creating a config object to be used as input in the functions 'multiTD',
+or as part in the functions 'multiTDDenton', 'multiTDCLvar'.
 }
 \examples{
 model <- data.frame (series_name  = c("a","b","c"),

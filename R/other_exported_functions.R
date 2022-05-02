@@ -55,10 +55,10 @@ CalcBIratio <- function(s, i, conversion = c("Sum", "Average")){
 
 #' Validation and formatting of outliers in infra-annual BI ratios
 #'
-#' Validate and format initial data.table which include the infra-annual BI
-#' outliers (or BI shifts) in a way that can be handled by the function 'multiTD',
-#' 'multiTDDenton' and multiTDCLvar'. See help of the function 'setConfig_default'
-#' for more info about the structure of the input.
+#' Validate and format initial data set including the infra-annual BI
+#' outliers (or BI shifts) in a way that can be handled by the function
+#' 'multiTDDenton'. See help of the function 'setConfig_default'
+#' for more information about the structure of the input.
 #'
 #' @param bi_q_outliers a data.frame or data.table object with 4 columns:
 #'                     'series_name', 'year', quarter_month' and 'intensity'
@@ -101,9 +101,9 @@ ValidateAndFormatBIqOutliers <- function(bi_q_outliers, benchmarks_series_names,
 
 #' Validation and formatting of manual infra-annual BI ratios
 #'
-#' Validate and format initial data.table which include the manual infra-annual
-#' BI ratios in a way that can be handled by the function 'multiTD', 'multiTDDenton'
-#' and multiTDCLvar'. See help of the function 'set_multiTDConfig' for more info
+#' Validate and format initial data set including the manual infra-annual
+#' BI ratios in a way that can be handled by the function 'multiTDDenton'.
+#' See help of the function 'set_multiTDConfig' for more information
 #' about the structure of the input.
 #'
 #' @param bi_q_manual a data.frame or a data.table object with 14 columns: '

@@ -20,9 +20,9 @@ the series names of the benchmarks series}
 data.table object
 }
 \description{
-Validate and format initial data.table which include the manual infra-annual
-BI ratios in a way that can be handled by the function 'multiTD', 'multiTDDenton'
-and multiTDCLvar'. See help of the function 'set_multiTDConfig' for more info
+Validate and format initial data set including the manual infra-annual
+BI ratios in a way that can be handled by the function 'multiTDDenton'.
+See help of the function 'set_multiTDConfig' for more information
 about the structure of the input.
 }
 \examples{

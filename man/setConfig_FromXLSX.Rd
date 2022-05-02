@@ -2,8 +2,8 @@
 % Please edit documentation in R/config.R
 \name{setConfig_FromXLSX}
 \alias{setConfig_FromXLSX}
-\title{Creating a config object to be used as full input in the functions 'nbbTD',
-or as part in the functions 'nbbTDDenton', 'nbbTDCLvar'.}
+\title{Creating a config object to be used as full input in the functions 'multiTD',
+or as part in the functions 'multiTDDenton', 'multiTDCLvar'.}
 \usage{
 setConfig_FromXLSX(file)
 }
@@ -17,8 +17,8 @@ for more information.}
 returns an object of class 'nbb.dsc.td.multiproc.config'
 }
 \description{
-Creating a config object to be used as full input in the functions 'nbbTD',
-or as part in the functions 'nbbTDDenton', 'nbbTDCLvar'.
+Creating a config object to be used as full input in the functions 'multiTD',
+or as part in the functions 'multiTDDenton', 'multiTDCLvar'.
 }
 \examples{
 \dontrun{

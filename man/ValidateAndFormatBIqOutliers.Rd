@@ -21,10 +21,10 @@ the series names of the benchmarks series}
 data.table object
 }
 \description{
-Validate and format initial data.table which include the infra-annual BI
-outliers (or BI shifts) in a way that can be handled by the function 'multiTD',
-'multiTDDenton' and multiTDCLvar'. See help of the function 'setConfig_default'
-for more info about the structure of the input.
+Validate and format initial data set including the infra-annual BI
+outliers (or BI shifts) in a way that can be handled by the function
+'multiTDDenton'. See help of the function 'setConfig_default'
+for more information about the structure of the input.
 }
 \examples{
 # see ?setConfig_default for more details about the structure of the original input

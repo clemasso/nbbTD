@@ -24,8 +24,8 @@
 #'                   translated into a Date object. If no indicator exists, the
 #'                   indicator series should be defined as NA or any constant
 #'                   so that the number of columns is identical to this of the
-#'                   benchmarks. Name and order of the columns must be identical
-#'                   to those of the benchmarks too.
+#'                   benchmarks (one indicator by benchmark). Name and order of
+#'                   the columns must be identical to those of the benchmarks.
 #'                   Only quarterly or monthly indicators are handled.
 #' @param config an object of the class 'nbb.dsc.td.multiproc.config'.
 #'               The object contains a list with the required information to
@@ -395,7 +395,7 @@ multiTD <- function(benchmarks, indicators, config,
 #' @param bi_q_outliers_form set of manual outliers formatted using the function
 #'                           'ValidateAndFormatBIqOutliers'
 #' @param bi_q_manual_form set of manual infra-annual BI ratio's formatted
-#'                         using the function 'validateFormatBIqManual'
+#'                         using the function 'ValidateFormatBIqManual'
 #' @param conversion type of consistency between the annual benchmarks and the
 #'                   infra-annual indicators
 #' @import data.table forecast rjd3toolkit rjd3sts rjd3tramoseats

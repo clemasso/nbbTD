@@ -28,8 +28,8 @@ case, the first column should be in a format that can be
 translated into a Date object. If no indicator exists, the
 indicator series should be defined as NA or any constant
 so that the number of columns is identical to this of the
-benchmarks. Name and order of the columns must be identical
-to those of the benchmarks too.
+benchmarks (one indicator by benchmark). Name and order of
+the columns must be identical to those of the benchmarks.
 Only quarterly or monthly indicators are handled.}
 
 \item{config}{an object of the class 'nbb.dsc.td.multiproc.config'.
