@@ -1,18 +1,18 @@
 ---
 title: "Multiprocessing NBB-customized Temporal Disaggregation of time series"
 output: 
-  html_vignette:
+  pdf_document:
     toc: true
     toc_depth: 3
-  pdf_document:
+  html_vignette:
     toc: true
     toc_depth: 3
 author: Corentin Lemasson
 abstract: The vignette explains how to perform temporal disaggregation (TD) of an annual to quarterly or monthly set of time series using the package *nbbTD*, which relies on R packages from JDemetra+. Either the sum or the average consistency between the annual benchmarks and the quarterly or monthly indicators are handled. The package focuses on the (enhanced) Denton PFD method using state space methodology. State space methodolgy helps to significantly speed up the process and expresses Denton as a statistical model. Considering this approach, more flexibility can be added to the original model. This includes the possibility to incorporate outliers (level shifts) in the Benchmark-to-Indicator (BI) ratio and change the infra-annual BI ratio (and therefore also the disaggregated series) manually for some periods. Hence, the main advantage of movement preservation is kept while some important drawbacks of Denton PFD as TD method, such as the high sensitivity to outliers and the lack of flexibility, can now be taken care of. When enhanced Denton (eDenton) is used, a procedure was developed to automatically select the forecasting method of the annual BI ratio but the forecasts can also be changed manually if necessary. Although the package was intended for temporal disaggregation, (e)Denton PFD method could be used for benchmarking too. In addition to (e)Denton PDF method, the traditional Chow-Lin method and its variants (Fernandez and Litterman) are also available in the package. In addition to the numerical output, a Shiny app is provided inside the package to visualize the results and help the user to make the best decision concerning the specification of the model for each series.       
 vignette: >
   %\VignetteIndexEntry{Multiprocessing NBB-customized temporal disaggregation of time series}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
 
 ```{r, include = FALSE}
@@ -144,7 +144,7 @@ runShiny(res) # Visualization of the results
 # Description of the functions
 
 To list all functions available in the package; 
-```{r}
+```{r, eval=FALSE}
 ls("package:nbbTD")
 ```
 

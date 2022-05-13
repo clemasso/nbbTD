@@ -25,9 +25,9 @@ server <- function(input, output){
   })
   output$denton_ci <- renderPlot({
     if(input$series %in% colnames(d_edenton$td.series)){
-      plot.nbb.dsc.td.multiproc.output.denton(d_edenton, series_name = input$series)
+      plot_td_series_ci(d_edenton, series_name = input$series)
     } else if (input$series %in% colnames(d_denton$td.series)){
-      plot.nbb.dsc.td.multiproc.output.denton(d_denton, series_name = input$series)
+      plot_td_series_ci(d_denton, series_name = input$series)
     }
   })
   output$denton_bi_analysis <- renderPlot({
@@ -46,7 +46,7 @@ server <- function(input, output){
   })
   output$chowlin_analysis <- renderPlot({
     if(input$series %in% colnames(d_clvar$td.series)){
-      plot.nbb.dsc.td.multiproc.output.clvar(d_clvar, series_name = input$series)
+      plot_td_series_decomp(d_clvar, series_name = input$series)
     }
   })
 }
