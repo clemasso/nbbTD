@@ -8,7 +8,7 @@ Perform multi-processing temporal disaggregation of an annual to quarterly or mo
 ``` r
 remotes::install_github("clemasso/nbbTD")
 ```
-## Usage (2 possibilities for the input)
+## Usage (2 possibilities)
 
 ### 1) input in R
 ``` r
