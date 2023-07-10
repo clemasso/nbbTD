@@ -2,10 +2,10 @@
 % Please edit documentation in R/run_shiny_app.R
 \name{plot_td_series}
 \alias{plot_td_series}
-\title{Plot TD series (Shiny)}
+\title{Disaggregated series with CI (Shiny)}
 \usage{
-plot_td_series(td_series, series_name)
+plot_td_series(td_series, td_series_stderr, series_name)
 }
 \description{
-Plot TD series (Shiny)
+Disaggregated series with CI (Shiny)
 }

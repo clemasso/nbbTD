@@ -1,22 +1,42 @@
 Package: nbbTD
-Title: Multiprocessing NBB-customized temporal disaggregation of time serie
-Version: 0.1.0
+Type: Package
+Title: Multiprocessing temporal disaggregation of time series
+Version: 1.0.0
 Authors@R: 
     person(given = "Corentin",
            family = "Lemasson",
            role = c("aut", "cre"),
            email = "corentin.lemasson@nbb.be")
-Description: Perform multi-processing temporal disaggregation of an annual to quarterly or monthly set of time series. 
-	     The focus is on the (enhanced) Denton PFD method defined in State Space form. Hence, the user can also add 
-	     outliers (level shift) in the Benchmark-to-Indicator (BI) ratio and import infra-annual BI ratio manually for 
-	     some periods. In addition to Denton PDF method, Chow-Lin method and its variants can also be used.
-Depends: R (>= 3.6.0)
-Imports: data.table, lubridate, zoo, openxlsx, rjd3toolkit, rjd3bench, rjd3sts, rjd3tramoseats, forecast, shiny
+Description: Perform multi-processing temporal disaggregation of an annual to quarterly or monthly set of time series. Amongst the possible methods, the model-based proportional first difference (PFD) Denton is defined in State Space form. It offers the possibility to add outliers (level shift) in the Benchmark-to-Indicator (BI) ratio and import infra-annual BI ratio manually for some periods. The function also includes an automatic procedure to forecast the annual BI ratio and takes this forecast into account in the estimation of the out-of-sample periods. Instead of the automatic procedure, forecasts of the annual BI ratio can also be defined by the user.
+Depends:
+  R (>= 3.6.0)
+Imports:
+  data.table,
+  lubridate,
+  zoo,
+  readxl,
+  openxlsx,
+  forecast,
+  shiny,
+  rjd3toolkit (>= 3.0.0),
+  rjd3bench (>= 0.9.1),
+  rjd3sts (>= 0.9.2),
+  rjd3tramoseats (>= 3.0.0)	
+SystemRequirements: Java JRE 17 or higher
 License: EUPL
 Encoding: UTF-8
-LazyData: true
+Collate: 
+    'data.R'
+    'enhancedDenton.R'
+    'mbDenton.R'
+    'multiTD.R'
+    'nbbTD.R'
+    'output.R'
+    'run_shiny_app.R'
+    'simulation.R'
+VignetteBuilder: knitr
+RoxygenNote: 7.2.3
 Suggests: 
     knitr,
     rmarkdown
-VignetteBuilder: knitr
-RoxygenNote: 7.0.2
+LazyData: true

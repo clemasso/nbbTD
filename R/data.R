@@ -8,14 +8,3 @@
 #' @source simulated data
 #' 
 "table_rw"
-
-#' nbb_data
-#'
-#' Real data examples of annual benchmark series and corresponding quarterly
-#' indicators taken from Belgian National Accounts. The letters used for the
-#' column names refers to the official clissification NACE A38.
-#' 
-#' @format list of two data.frames containing the example data
-#' @source real data examples taken from Belgian National Accounts.
-#' 
-"nbb_data"

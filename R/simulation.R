@@ -1,3 +1,39 @@
+# Simulate score distribution of random walk process (H0)
+simulate_score_distribution_rw <- function(l, n){
+
+  if(l < 5) stop("Length of the series is very short. You should consider a random walk process by default.")
+  distrib <- vector()
+
+  # at least 10000 iterations
+  for (i in 1:n){
+
+    # Simulate random walk series
+    s <- sim_rw(l, x0 = 100) # normalization with mean=100 to avoid problems related to negative values (and values near 0)
+
+    # Calculate RMSE of cross-validation errors
+    rmse_all <- CalcCVRMSEOfSelectedModels(s)
+
+    # Calculate score
+    rmse_h0 <- rmse_all[names(rmse_all) == "rw"]
+    rmse_all_ha <- rmse_all[names(rmse_all) != "rw"]
+    rmse_ha <- min(rmse_all_ha)
+
+    rmse_diff <- as.numeric(rmse_h0 - rmse_ha)
+    distrib <- c(distrib, rmse_diff)
+  }
+
+  return(distrib)
+}
+
+# Function to simulate random walk process (adapted from https://bookdown.org/kochiuyu/Technical-Analysis-with-R/simulation.html)
+# period (N), initial value (x0), drift (mu), and variance (var)
+sim_rw <- function(N, x0, mu = 0, var = 1) {
+  z <- cumsum(rnorm(n=N, mean=0, sd=sqrt(var)))
+  t<-1:N
+  x<-x0+t*mu+z
+  return(x)
+}
+
 
 ### Enhanced Denton PFD method: Creating table with critical value for the
 ### automatic selection of the model for the forecasting of the annual BI ratio
@@ -36,6 +72,7 @@
 #
 # dtable_spline <-  apply(dtable, 2, function(x) na.spline(x)) # use spline for approximation (used from n > 30)
 #
+
 
 
 

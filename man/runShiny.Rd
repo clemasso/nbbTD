@@ -4,11 +4,11 @@
 \alias{runShiny}
 \title{Run Shiny App on the results}
 \usage{
-runShiny(res)
+runShiny(rslt)
 }
 \arguments{
-\item{res}{an object of class 'nbb.dsc.td.multiproc.output'}
+\item{rslt}{an object of class 'nbb.multiTD.output'}
 }
 \description{
-Visualization of the results of class 'nbb.dsc.td.multiproc.output'
+Visualization of the results of class 'nbb.multiTD.output'
 }

@@ -4,8 +4,10 @@
 \name{table_rw}
 \alias{table_rw}
 \title{table_rw data set}
-\format{A data.table with 11 columns including series length and the
-        critical value for various quantiles}
+\format{
+A data.table with 11 columns including series length and the
+        critical value for various quantiles
+}
 \source{
 simulated data
 }

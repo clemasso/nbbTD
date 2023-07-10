@@ -4,14 +4,17 @@
 \name{nbbTD}
 \alias{nbbTD}
 \alias{nbbTD-package}
-\title{Multiprocessing NBB-customized temporal disaggregation of time series}
+\title{Multiprocessing temporal disaggregation of time series}
 \description{
-Perform multi-processing temporal disaggregation of an annual to quarterly
-or monthly set of time series. The focus is on the (enhanced) Denton PFD
-method defined in State Space form. Hence, the user can also add outliers
-(level shift) outliers (level shift) in the Benchmark-to-Indicator (BI) ratio
-and import infra-annual BI ratio manually for some periods. In addition to
-Denton PDF method, Chow-Lin method and its variants can also be used.
+Perform multi-processing temporal disaggregation of an annual to quarterly or
+monthly set of time series. Amongst the possible methods, the model-based
+proportional first difference (PFD) Denton is defined in State Space form. It
+offers the possibility to add outliers (level shift) in the
+Benchmark-to-Indicator (BI) ratio and import infra-annual BI ratio manually
+for some periods. The function also includes an automatic procedure to
+forecast the annual BI ratio and takes this forecast into account in the
+estimation of the out-of-sample periods. Instead of the automatic procedure,
+forecasts of the annual BI ratio can also be defined by the user.
 }
 \author{
 Corentin Lemasson \email{corentin.lemasson@nbb.be}
