@@ -42,5 +42,3 @@ library(nbbTD)
 rslt <- multiTD_fromXLSX(path_data = "my_input.xlsx")
 runShiny(rslt)    
 ```
-
-test
