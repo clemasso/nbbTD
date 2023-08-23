@@ -15,7 +15,8 @@
 #'   specified in the outliers argument. Default is 10 for each outlier.
 #' @param manual_disagBI Disaggregated BI ratio that the user wants to fix. Must
 #'   be as a matrix of two columns called 'period' and 'bi_ratio'. The periods
-#'   must be in decimal. Default is NULL (no intervention).
+#'   must be in decimal. Default is NULL (no intervention). If not NULL, they 
+#'   must be provided for each quarter/month of the year.
 #' @param conversion type of consistency between the annual benchmarks and the
 #'   infra-annual indicators.
 #' @import data.table rjd3toolkit rjd3sts
@@ -54,6 +55,7 @@ mbdenton <- function(indicator,
   
   # fill yc with manual bi 
   if(!is.null(manual_disagBI)){
+    if(nrow(manual_disagBI)%%freq != 0) stop("The fixed disaggregated BI ratio provided do not cover the entire year.")
     mbi<-data.table(manual_disagBI)
     mbi[, year:=as.numeric(substr(period,1,4))]
     ym<-unique(mbi$year)

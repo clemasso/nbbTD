@@ -247,6 +247,11 @@ multiTD <- function(benchmarks,
         dBIfixi_date_char<-names(dBIfixi_value)
         dBIfixi_date<-sapply(dBIfixi_date_char, function(x) decimal_date2(as.numeric(substr(x,1,4)), as.numeric(substr(x,5,6)), freq))
         dBIfixi<-cbind(period=dBIfixi_date, bi_ratio=dBIfixi_value)
+        
+        if(length(dBIfixi_value)%%freq != 0){
+          warning(paste0(bnamei, ": the fixed disaggregated BI ratio provided do not cover the entire year. They are ignored for the series."), call. = FALSE)
+          dBIfixi<-NULL
+        }
       }else{
         dBIfixi<-NULL
       }

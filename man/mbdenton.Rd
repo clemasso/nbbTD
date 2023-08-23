@@ -29,7 +29,8 @@ specified in the outliers argument. Default is 10 for each outlier.}
 
 \item{manual_disagBI}{Disaggregated BI ratio that the user wants to fix. Must
 be as a matrix of two columns called 'period' and 'bi_ratio'. The periods
-must be in decimal. Default is NULL (no intervention).}
+must be in decimal. Default is NULL (no intervention). If not NULL, they 
+must be provided for each quarter/month of the year.}
 
 \item{conversion}{type of consistency between the annual benchmarks and the
 infra-annual indicators.}
