@@ -129,7 +129,7 @@ Once estimated, we can easily derive the disaggregated series and the disaggrega
 Install and load package
 ```{r, eval=FALSE}
 install.packages("nbbTD")
-library(nbbTD)
+library("nbbTD")
 ```
 
 Once the package is loaded, there are three steps to follow:
@@ -155,9 +155,7 @@ rslt<-multiTD(Y, x, model=list(retail="Chow-Lin", clothing="mbDenton"), outliers
 print(rslt)
 #rslt$...
 
-\dontrun{
-runShiny(rslt) 
-}
+runShiny(rslt)
 ```
 
 ## Description of the functions
