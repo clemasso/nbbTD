@@ -72,10 +72,3 @@ sim_rw <- function(N, x0, mu = 0, var = 1) {
 #
 # dtable_spline <-  apply(dtable, 2, function(x) na.spline(x)) # use spline for approximation (used from n > 30)
 #
-
-
-
-
-
-
-
