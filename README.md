@@ -29,11 +29,13 @@ remotes::install_github("clemasso/nbbTD")
 
 ## Usage (2 possibilities)
 
-### 1) input in R
+``` r
+library("nbbTD")
+```
+
+### 1) Input in R
 
 ``` r
-# Example
-library("nbbTD")
 ## Input: retail data, 2 benchmarks series to disaggregate, 3 indicators in total
 Y <- cbind(
   rjd3toolkit::aggregate(rjd3toolkit::retail$RetailSalesTotal, 1),
@@ -66,11 +68,9 @@ runShiny(rslt)
 print(rslt)
 ```
 
-### 2) input in Excel
+### 2) Input in Excel
 
 ``` r
-# Example
-library("nbbTD")
 ## Fill structured .xlsx file with your input. See template or vignette (in the vignette map) for the structure of the Excel file
 rslt <- multiTD_fromXLSX(path_data = "my_input.xlsx")
 runShiny(rslt)
