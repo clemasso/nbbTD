@@ -68,7 +68,7 @@ CalcCVRMSEOfSelectedModels <- function(s){
 # Calculate RMSE of cross-validation errors for a selected method
 CalcCVRMSE <- function(s, model = c("rw", "mean", "gmeang", "tramo", "holtd", "regl", "arima"), fh = 1, wd = 5, min.origin = 10){
 
-  model=match.arg(model)
+  model <- match.arg(model)
 
   # Calculate cross-validation errors according to the selected model
   if (model=="rw") {
@@ -238,7 +238,7 @@ calculate_pred_score <- function(rmseCV){
 #' @return vector with forecasts
 forecast_series <- function(s, model = c("rw", "mean", "gmeang", "tramo",  "holtd", "arima", "regl"), fh = 2, wd = 5){
 
-  model=match.arg(model)
+  model <- match.arg(model)
 
   if (model == "rw") {
     m <- rwf(s, fh)

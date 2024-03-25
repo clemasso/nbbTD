@@ -176,17 +176,18 @@ During the execution of the code, a (non-exhaustive) number of tests are perform
 
 ```{r, eval = FALSE}
 # Call
-multiTD(benchmarks, 
-        indicators,
-        model = "mbDenton",
-        outliers = NULL,
-        disagBIfixed = NULL, 
-        forecastBI = c("none", "auto", "userdefined+none", "userdefined+auto"),
-        forecastBI.values = NULL,
-        forecastBI.quantile = c("q.95", "q.80", "q.90", "q.99", "q.999"),
-        freezeT1 = FALSE,
-        conversion = c("Sum", "Average"),
-        path_xlsx = "")
+multiTD(
+    benchmarks, 
+    indicators,
+    model = "mbDenton",
+    outliers = NULL,
+    disagBIfixed = NULL, 
+    forecastBI = c("none", "auto", "userdefined+none", "userdefined+auto"),
+    forecastBI.values = NULL,
+    forecastBI.quantile = c("q.95", "q.80", "q.90", "q.99", "q.999"),
+    freezeT1 = FALSE,
+    conversion = c("Sum", "Average"),
+    path_xlsx = ""
 )
 ```
 
