@@ -44,7 +44,7 @@ mbdenton <- function(indicator,
   if(is.matrix(benchmark)){
     if(ncol(benchmark)>1) stop("Mutli-processing not allowed. You can use function multiTD for that.")
     else benchmark_name<-colnames(benchmark)
-  }else benchmark_name<-NULL
+  } else benchmark_name<-NULL
 
   # prepare data
   freq<-frequency(indicator)

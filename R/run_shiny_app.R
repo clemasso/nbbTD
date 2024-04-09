@@ -40,7 +40,7 @@ plot_growth_chart <- function(benchmarks, indicators, series_name, call.conversi
   # benchmark
   if(is.matrix(benchmarks)){
     y<-benchmarks[,series_name]
-  }else{
+  } else{
     y<-benchmarks
   }
 
@@ -53,7 +53,7 @@ plot_growth_chart <- function(benchmarks, indicators, series_name, call.conversi
     } else if (!is.null(dim(x))){
       x<-x[,1] #only consider first indicator
     }
-  }else{
+  } else{
     x<-indicators
   }
 

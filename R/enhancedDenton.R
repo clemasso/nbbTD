@@ -22,7 +22,7 @@ forecast_annual_bi <- function(bi_ts, critical_value){
       wd_mod1<-NA
       mod2<-as.character(alt_mod)
       wd_mod2<-alt_wd
-    }else{
+    } else{
       wd_mod1<-alt_wd
       mod2<-"rw"
       wd_mod2<-NA
