@@ -38,17 +38,17 @@ runShiny <- function(rslt) {
 plot_growth_chart <- function(benchmarks, indicators, series_name, call.conversion){
 
   # benchmark
-  if(is.matrix(benchmarks)){
+  if (is.matrix(benchmarks)){
     y<-benchmarks[,series_name]
   } else{
     y<-benchmarks
   }
 
   # indicator
-  if(is.matrix(indicators)){
+  if (is.matrix(indicators)){
     iname<-colnames(indicators)[grep(pattern = series_name, colnames(indicators))]
     x<-indicators[,iname]
-    if(length(x)==0){
+    if (length(x)==0){
       x<-ts(rep(1,length(time(indicators))), start=start(indicators), frequency = frequency(indicators)) #smoothing
     } else if (!is.null(dim(x))){
       x<-x[,1] #only consider first indicator
@@ -60,7 +60,7 @@ plot_growth_chart <- function(benchmarks, indicators, series_name, call.conversi
   x_in <- window(x, start = start(y), end = c(end(y)[1], frequency(x)))
 
   # compute annual growth rate
-  if(grepl("Average", call.conversion, fixed = TRUE)){
+  if (grepl("Average", call.conversion, fixed = TRUE)){
     xT <- aggregate.ts(x_in, nfreq = 1, FUN = mean)
   } else{
     xT <- aggregate.ts(x_in, nfreq = 1, FUN = sum)
@@ -105,13 +105,13 @@ plot_annual_bi <- function(bi_ts, f_bi_ts, series_name, scaled = FALSE, ...){
   f_bi_ts <- f_bi_ts[, series_name]
   nf <- length(f_bi_ts)
 
-  if(scaled){
+  if (scaled){
     bi_scaled_ts <- 100 * bi_ts / mean(bi_ts)
     bi_f_scaled_ts <- 100 * f_bi_ts / mean(bi_ts)
   }
 
   # plot results
-  if(!scaled){
+  if (!scaled){
     ts.plot(bi_ts, gpars=list(xlab="", xaxt="n", ylab="", type = "o", lwd=2, pch=19, cex=1.2, las=2, col = "blue", xlim = c(Y1[1], YN[1]+nf)), ylim = c(min(bi_ts, f_bi_ts, na.rm = TRUE), max(bi_ts, f_bi_ts, na.rm = TRUE)), ...)
     lines(f_bi_ts, type = "o", lwd=2, pch=19, cex=1.2, las=2, col = "red")
     axis(1, at = seq(Y1[1], YN[1]+nf, by = 1), las=2)

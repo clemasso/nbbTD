@@ -1,7 +1,7 @@
 # Simulate score distribution of random walk process (H0)
 simulate_score_distribution_rw <- function(l, n){
 
-  if(l < 5) stop("Length of the series is very short. You should consider a random walk process by default.")
+  if (l < 5) stop("Length of the series is very short. You should consider a random walk process by default.")
   distrib <- vector()
 
   # at least 10000 iterations

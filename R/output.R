@@ -37,10 +37,10 @@ plot.nbb.multiTD.output <- function(x, series_name = NULL, ...){
 
   if (is.null(series_name)){
     col_num<-1
-    series_name<-if(is.matrix(x$benchmarks)) colnames(x$benchmarks)[1] else "series"
+    series_name<-if (is.matrix(x$benchmarks)) colnames(x$benchmarks)[1] else "series"
   } else{
     col_num<-match(series_name, colnames(x$benchmarks))
-    if(is.na(col_num)) stop("Series name not found")
+    if (is.na(col_num)) stop("Series name not found")
   }
 
   s<-x$td_series[,col_num]
