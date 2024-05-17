@@ -18,6 +18,8 @@ StripTrailingWhitespace: Yes
 BuildType: Package
 PackageUseDevtools: Yes
 PackageInstallArgs: --no-multiarch --with-keep.source
-PackageRoxygenize: rd,collate,namespace
+PackageBuildBinaryArgs: --no-multiarch
+PackageCheckArgs: --no-multiarch --as-cran
+PackageRoxygenize: rd,collate,namespace,vignette
 
 UseNativePipeOperator: Yes

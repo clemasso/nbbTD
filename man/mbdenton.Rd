@@ -29,7 +29,7 @@ specified in the outliers argument. Default is 10 for each outlier.}
 
 \item{manual_disagBI}{Disaggregated BI ratio that the user wants to fix. Must
 be as a matrix of two columns called 'period' and 'bi_ratio'. The periods
-must be in decimal. Default is NULL (no intervention). If not NULL, they 
+must be in decimal. Default is NULL (no intervention). If not NULL, they
 must be provided for each quarter/month of the year.}
 
 \item{conversion}{type of consistency between the annual benchmarks and the
@@ -50,7 +50,7 @@ x<-rjd3toolkit::aggregate(rjd3toolkit::retail$FoodAndBeverageStores, 4)
 outliers<-c(2008.75,2009.00)
 outliers.intensity<-c(10,5)
 manual_disagBI<-matrix(cbind(c(2008.00,2008.25,2008.50,2008.75),
-                             c(7.246695,7.246695,7.246695,6.0)), 
+                             c(7.246695,7.246695,7.246695,6.0)),
                        ncol=2,
                        dimnames=list(NULL,c("period","bi_ratio")))
 rslt<-mbdenton(x,Y,outliers,outliers.intensity,manual_disagBI,conversion="Sum")

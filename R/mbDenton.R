@@ -41,10 +41,10 @@ mbdenton <- function(indicator,
                      manual_disagBI = NULL,
                      conversion = c("Sum", "Average")){
 
-  if(is.matrix(benchmark)){
-    if(ncol(benchmark)>1) stop("Mutli-processing not allowed. You can use function multiTD for that.")
+  if (is.matrix(benchmark)){
+    if (ncol(benchmark)>1) stop("Mutli-processing not allowed. You can use function multiTD for that.")
     else benchmark_name<-colnames(benchmark)
-  }else benchmark_name<-NULL
+  } else benchmark_name<-NULL
 
   # prepare data
   freq<-frequency(indicator)
@@ -54,8 +54,8 @@ mbdenton <- function(indicator,
   time_vect<-as.vector(time(indicator))
 
   # fill yc with manual bi
-  if(!is.null(manual_disagBI)){
-    if(nrow(manual_disagBI)%%freq != 0) stop("The fixed disaggregated BI ratio provided do not cover the entire year.")
+  if (!is.null(manual_disagBI)){
+    if (nrow(manual_disagBI)%%freq != 0) stop("The fixed disaggregated BI ratio provided do not cover the entire year.")
     mbi<-data.table(manual_disagBI)
     mbi[, year:=as.numeric(substr(period,1,4))]
     ym<-unique(mbi$year)
@@ -66,12 +66,12 @@ mbdenton <- function(indicator,
 
     discrepancies_T <- cbind(mbi[, .(yT_ym_manual = sum(yt)), by = "year"], yT_ym)
     discrepancies_T <- discrepancies_T[, discrepancy := yT_ym - yT_ym_manual]
-    if(abs(sum(discrepancies_T$discrepancy)) > 0){
+    if (abs(sum(discrepancies_T$discrepancy)) > 0){
       mbi<-merge(mbi, discrepancies_T, by = "year")
       mbi[, w := yt / yT_ym_manual]
       mbi[, yt := yt + (discrepancy*w)]
       discrepancies_T <- discrepancies_T[, discrepancy_perc := discrepancy / yT_ym]
-      if(max(abs(discrepancies_T$discrepancy_perc)) > 0.001){
+      if (max(abs(discrepancies_T$discrepancy_perc)) > 0.001){
         warning("Significant discrepancy was found using the user-defined disaggregated bi ratios. This was corrected automatically prorata.", call. = FALSE)
       }
     }
@@ -81,16 +81,16 @@ mbdenton <- function(indicator,
   }
 
   # adapt yc when conversion = 'Average'
-  if(conversion == "Average"){
+  if (conversion == "Average"){
     yc <- yc*freq
   }
 
   # define the vector of relative standard errors
   stderr_beta <- rep(1,length(indicator)) # 1 by default
 
-  if(!is.null(outliers)){
+  if (!is.null(outliers)){
     n <- match(outliers, as.character(time_vect)) - 1 # -1 given recursion
-    if(length(outliers.intensity) == 0) outliers.intensity <- 10
+    if (length(outliers.intensity) == 0) outliers.intensity <- 10
     stderr_beta[n] <- outliers.intensity
   }
 

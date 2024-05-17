@@ -10,7 +10,7 @@ forecast_annual_bi <- function(bi_ts, critical_value){
   # cross-validation rmse
   rmseCV<-CalcCVRMSEOfSelectedModels(bi_norm)
 
-  if(!all(is.na(rmseCV))){
+  if (!all(is.na(rmseCV))){
     # model selection
     pred_score<-calculate_pred_score(rmseCV)
     sn<-as.numeric(pred_score[["score"]])
@@ -18,11 +18,11 @@ forecast_annual_bi <- function(bi_ts, critical_value){
     alt_wd<-pred_score[["alt_wd"]]
 
     mod1<-ifelse(sn < critical_value | is.na(sn), "rw", alt_mod)
-    if(mod1 == "rw"){
+    if (mod1 == "rw"){
       wd_mod1<-NA
       mod2<-as.character(alt_mod)
       wd_mod2<-alt_wd
-    }else{
+    } else{
       wd_mod1<-alt_wd
       mod2<-"rw"
       wd_mod2<-NA
@@ -39,7 +39,7 @@ forecast_annual_bi <- function(bi_ts, critical_value){
 # Calculate RMSE of cross validation errors for several forecasting models
 CalcCVRMSEOfSelectedModels <- function(s){
 
-  if(length(s) >= 13){
+  if (length(s) >= 13){
     rmse_h0 <- CalcCVRMSE(s, model="rw", min.origin = 10)
     rmse_mean5 <- CalcCVRMSE(s, model="mean", wd = 5, min.origin = 10)
     rmse_gmeang5 <- CalcCVRMSE(s, model="gmeang", wd = 5, min.origin = 10)
@@ -91,7 +91,7 @@ CalcCVRMSE <- function(s, model = c("rw", "mean", "gmeang", "tramo", "holtd", "r
 
   } else stop("Model not supported")
 
-  if(all(is.na(cve))) warning(paste("No CV errors could be computed with the model", model))
+  if (all(is.na(cve))) warning(paste("No CV errors could be computed with the model", model))
 
   # Calculate RMSE of cross-validation errors
   rmse_cve <- sqrt(mean(cve^2, na.rm=TRUE))
@@ -167,7 +167,7 @@ calc_cv_gmeang <- function(s, h, mw.size = NA, min.origin = 5){
     s_i <- s[-(exclude_from:length(s))]
     ss <- ts(s_i, start = start(s))
 
-    if(!is.na(mw.size)){
+    if (!is.na(mw.size)){
       s_imw <- s_i[(length(s_i)-mw.size):length(s_i)]
       ss <- ts(s_imw, end = end(ss))
     }
@@ -216,9 +216,9 @@ calculate_pred_score <- function(rmseCV){
   ha_mod<-names(alt_mod)[which.min(alt_mod)]
   score<-h0-ha
   alt_wd<-NA
-  if(!is.na(score)){
+  if (!is.na(score)){
     ls<-substr(ha_mod,nchar(ha_mod),nchar(ha_mod))
-    if(!is.na(suppressWarnings(as.numeric(ls)))){
+    if (!is.na(suppressWarnings(as.numeric(ls)))){
       alt_wd<-as.numeric(ls)
       ha_mod<-substr(ha_mod,1,nchar(ha_mod)-1)
     }
@@ -263,7 +263,7 @@ forecast_series <- function(s, model = c("rw", "mean", "gmeang", "tramo",  "holt
     f <- as.vector(m$mean)
   } else stop("Model not supported")
 
-  if(any(is.na(f))) warning(paste("Some series could not be forecasted", model))
+  if (any(is.na(f))) warning(paste("Some series could not be forecasted", model))
 
   return(f)
 }
@@ -275,7 +275,7 @@ extend_benchmark_series <- function(benchmark, indicator, f_biY, conversion = c(
   T1_yr<-end(benchmark)[1]+1
   x_T1 <- window(indicator, start = c(T1_yr, 1), end = c(T1_yr, frequency(indicator)))
 
-  if(conversion == "Sum"){
+  if (conversion == "Sum"){
     xY_T1 <- as.numeric(aggregate.ts(x_T1, nfrequency = 1, FUN = sum))
   } else if (conversion == "Average"){
     xY_T1 <- as.numeric(aggregate.ts(x_T1, nfrequency = 1, FUN = mean))
@@ -293,7 +293,7 @@ extend_benchmark_series <- function(benchmark, indicator, f_biY, conversion = c(
 ## we just extend the benchmarks ratio of one year.
 extrapolate_infra_annual_BI_ratio <- function(s, f_Y, freq, b, i, conversion){
 
-  if(freq == 4){
+  if (freq == 4){
     ## Extract last quarterly BI ratio and compute eta
     l <- length(s)
     s_n_2 <- s[l-2]
@@ -315,10 +315,10 @@ extrapolate_infra_annual_BI_ratio <- function(s, f_Y, freq, b, i, conversion){
     i_T <- window(i, start = c(year_T, 1), end = c(year_T, freq))
     s_m_T <- ts(c(s[l-3], s_n_2_m, s_n_1_m, s_n_m), frequency = freq, start = c(year_T, 1))
     td_m_T <- s_m_T * i_T
-    td_m_T_Y <- if(conversion == "Sum") as.vector(aggregate(td_m_T)) else as.vector(mean(td_m_T))
+    td_m_T_Y <- if (conversion == "Sum") as.vector(aggregate(td_m_T)) else as.vector(mean(td_m_T))
     diff_T <- as.vector(window(b, start = year_T)) - td_m_T_Y
     diff_T_vec <-rep(diff_T,freq)
-    dist_T_vec <- if(conversion == "Sum") c(0,0.25,0.25,0.5) else freq*c(0,0.25,0.25,0.5)
+    dist_T_vec <- if (conversion == "Sum") c(0,0.25,0.25,0.5) else freq*c(0,0.25,0.25,0.5)
     td_m_T_bench <- td_m_T + diff_T_vec*dist_T_vec
     s_m_T_bench <- td_m_T_bench / i_T
 
@@ -331,7 +331,7 @@ extrapolate_infra_annual_BI_ratio <- function(s, f_Y, freq, b, i, conversion){
     s_0 <- window(s, end = c(year_T - 1, freq))
     sf <- ts(c(s_0, s_m_T_bench, s_m_T1_adj), frequency = freq, start = start(s))
 
-  } else if(freq == 12){
+  } else if (freq == 12){
     ## Extract last monthly BI ratio and compute eta
     l <- length(s)
     s_n_8 <- s[l-8]
@@ -373,10 +373,10 @@ extrapolate_infra_annual_BI_ratio <- function(s, f_Y, freq, b, i, conversion){
     i_T <- window(i, start = c(year_T, 1), end = c(year_T, freq))
     s_m_T <- ts(c(s[l-11], s[l-10], s[l-9], s_n_8_m, s_n_7_m, s_n_6_m, s_n_5_m, s_n_4_m, s_n_3_m, s_n_2_m, s_n_1_m, s_n_m), frequency = freq, start = c(year_T, 1))
     td_m_T <- s_m_T * i_T
-    td_m_T_Y <- if(conversion == "Sum") as.vector(aggregate(td_m_T)) else as.vector(mean(td_m_T))
+    td_m_T_Y <- if (conversion == "Sum") as.vector(aggregate(td_m_T)) else as.vector(mean(td_m_T))
     diff_T <- as.vector(window(b, start = year_T)) - td_m_T_Y
     diff_T_vec <- rep(diff_T,freq)
-    dist_T_vec <- if(conversion == "Sum") c(0,0,0,0.08,0.08,0.08,0.08,0.09,0.09,0.16,0.17,0.17) else freq*c(0,0,0,0.08,0.08,0.08,0.08,0.09,0.09,0.16,0.17,0.17)
+    dist_T_vec <- if (conversion == "Sum") c(0,0,0,0.08,0.08,0.08,0.08,0.09,0.09,0.16,0.17,0.17) else freq*c(0,0,0,0.08,0.08,0.08,0.08,0.09,0.09,0.16,0.17,0.17)
     td_m_T_bench <- td_m_T + diff_T_vec*dist_T_vec
     s_m_T_bench <- td_m_T_bench / i_T
 

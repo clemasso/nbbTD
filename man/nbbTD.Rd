@@ -2,8 +2,8 @@
 % Please edit documentation in R/nbbTD.R
 \docType{package}
 \name{nbbTD}
-\alias{nbbTD}
 \alias{nbbTD-package}
+\alias{nbbTD}
 \title{Multiprocessing temporal disaggregation of time series}
 \description{
 Perform multi-processing temporal disaggregation of an annual to quarterly or
