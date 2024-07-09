@@ -156,7 +156,7 @@ multiTD <- function(benchmarks,
 
     ## Missing values
     indicators_ts <- replace_empty_col_by_cst(indicators_ts)
-    if (any(is.na(indicators_ts)) | any(is.na(benchmarks_ts)))
+    if (any(is.na(indicators_ts)) || any(is.na(benchmarks_ts)))
         stop("missing observations are not handled")
 
     ## Critical value for forecasting annual BI
@@ -220,7 +220,7 @@ multiTD <- function(benchmarks,
             warning(paste0(bnamei, ": model not allowed. mbDenton was used instead by default."), call. = FALSE)
         }
 
-        if (modi == "mbdenton" & is.matrix(xi)){
+        if (modi == "mbdenton" && is.matrix(xi)){
             xi<-xi[,1]
             warning(paste0(bnamei, ": mbDenton do not handle multiple indicators. Only the first indicator is considered."), call. = FALSE)
         }
@@ -307,7 +307,7 @@ multiTD <- function(benchmarks,
             ### 'Enhanced' model-based Denton
             else {
                 #### extension of benchmark series when indicator covers the full year T+1
-                if ((ne>freq & ne<freq*2) | (ne==freq & !freezeT1)){
+                if ((ne>freq && ne<freq*2) || (ne==freq && !freezeT1)){
                     yi_enhanced<-extend_benchmark_series(yi, xi, fbiYi[[1]][1], conversion)
                 } else if (ne>=freq*2){
                     stop("Out-of-sample period with enhanced model-based Denton must be < 2 years.")
@@ -372,7 +372,7 @@ multiTD <- function(benchmarks,
         # III. Tests
 
         ## Relevancy of outliers
-        if (modi == "mbdenton" & !is.null(outli)){
+        if (modi == "mbdenton" && !is.null(outli)){
             yi_used<-if (enhanced) yi_enhanced else yi
             rsltiNO<-mbdenton(xi, yi_used, outliers=NULL, manual_disagBI=dBIfixi, conversion=conversion)
             lr_test(ll1=ll, ll2=rsltiNO$ll, bnamei)
@@ -656,18 +656,18 @@ calc_annual_bi_ratio <- function(s, i, conversion = c("Sum", "Average")){
 
     mts <- FALSE
 
-    if (is.mts(s) & is.mts(i)){
+    if (is.mts(s) && is.mts(i)){
         mts <- TRUE
         if (nrow(s) > nrow(i)/frequency(i)) stop("ERROR: indicator series too short compared with benchmark series")
-    } else if ((is.mts(s) & !is.mts(i)) | (!is.mts(s) & is.mts(i))) {
+    } else if ((is.mts(s) && !is.mts(i)) || (!is.mts(s) && is.mts(i))) {
         stop("Benchmark series is an mts object and not the indicator series or conversely")
-    } else if (is.ts(s) & is.ts(i)){
+    } else if (is.ts(s) && is.ts(i)){
         if (length(s) > length(i)/frequency(i)) stop("ERROR: indicator series too short compared with benchmark series")
     } else {
         stop("Benchmark series and indicator series must be a ts or mts object")
     }
 
-    if (start(s)[1] != start(i)[1] | start(s)[2] != start(i)[2]) stop("ERROR: indicator series does not start at the same time as the benchmark series")
+    if (start(s)[1] != start(i)[1] || start(s)[2] != start(i)[2]) stop("ERROR: indicator series does not start at the same time as the benchmark series")
 
     # aggregate indicator on annual basis
     if (conversion == "Sum"){
