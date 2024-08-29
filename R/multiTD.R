@@ -349,7 +349,7 @@ multiTD <- function(benchmarks,
             }
 
             modi_short <- ifelse(modi == "chow-lin", "Ar1", ifelse(modi == "fernandez", "Rw", "RwAr1"))
-            if (length(unique(xi) > 1)){
+            if (length(unique(xi)) > 1) {
                 rslti<-temporaldisaggregation(yi, indicators = as.list(xi), model = modi_short, conversion = conversion)
             } else {
                 rslti<-temporaldisaggregation(yi, model = modi_short, conversion = conversion) # case without indicator
