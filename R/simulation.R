@@ -1,7 +1,7 @@
 # Simulate score distribution of random walk process (H0)
 simulate_score_distribution_rw <- function(l, n){
 
-  if(l < 5) stop("Length of the series is very short. You should consider a random walk process by default.")
+  if (l < 5) stop("Length of the series is very short. You should consider a random walk process by default.")
   distrib <- vector()
 
   # at least 10000 iterations
@@ -72,10 +72,3 @@ sim_rw <- function(N, x0, mu = 0, var = 1) {
 #
 # dtable_spline <-  apply(dtable, 2, function(x) na.spline(x)) # use spline for approximation (used from n > 30)
 #
-
-
-
-
-
-
-

@@ -1,5 +1,19 @@
+---
+output: github_document
+---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%", 
+  fig.align = "center",
+  fig.dim = c(7,4) * 1.4
+)
+```
 
 # nbbTD
 
@@ -8,38 +22,30 @@
 
 Multiprocessing temporal disaggregation of time series
 
+
 ## Description
 
-Perform multi-processing temporal disaggregation of an annual to
-quarterly or monthly set of time series. Amongst the possible methods,
-the model-based proportional first difference (PFD) Denton is defined in
-State Space form. It offers the possibility to add outliers (level
-shift) in the Benchmark-to-Indicator (BI) ratio and import infra-annual
-BI ratio manually for some periods. The function also includes an
-automatic procedure to forecast the annual BI ratio and takes this
-forecast into account in the estimation of the out-of-sample periods.
-Instead of the automatic procedure, forecasts of the annual BI ratio can
-also be defined by the user.
+Perform multi-processing temporal disaggregation of an annual to quarterly or monthly set of time series. Amongst the possible methods, the model-based proportional first difference (PFD) Denton is defined in State Space form. It offers the possibility to add outliers (level shift) in the Benchmark-to-Indicator (BI) ratio and import infra-annual BI ratio manually for some periods. The function also includes an automatic procedure to forecast the annual BI ratio and takes this forecast into account in the estimation of the out-of-sample periods. Instead of the automatic procedure, forecasts of the annual BI ratio can also be defined by the user.
+
 
 ## Installation
 
-Running rjd3 packages requires Java 17 or higher. How to set up such a
-configuration in R is explained
-[here](https://jdemetra-new-documentation.netlify.app/#installing-the-software).
+Running rjd3 packages requires Java 17 or higher. How to set up such a configuration in R is explained [here](https://jdemetra-new-documentation.netlify.app/#installing-the-software).
 
-``` r
+```{r, echo = TRUE, eval = FALSE}
 remotes::install_github("clemasso/nbbTD")
 ```
 
+
 ## Usage (2 possibilities)
 
-``` r
+```{r, echo = TRUE, eval = FALSE}
 library("nbbTD")
 ```
 
 ### 1) Input in R
 
-``` r
+```{r, echo = TRUE, eval = FALSE}
 ## Input: retail data, 2 benchmarks series to disaggregate, 3 indicators in total
 Y <- cbind(
   rjd3toolkit::aggregate(rjd3toolkit::retail$RetailSalesTotal, 1),
@@ -74,21 +80,19 @@ print(rslt)
 
 ### 2) Input in Excel
 
-``` r
+```{r, echo = TRUE, eval = FALSE}
 ## Fill structured .xlsx file with your input. See template or vignette (in the vignette map) for the structure of the Excel file
 rslt <- multiTD_fromXLSX(path_data = "my_input.xlsx")
 runShiny(rslt)
 ```
 
+
 ## Package Maintenance and contributing
 
-Any contribution is welcome and should be done through pull requests
-and/or issues. pull requests should include **updated tests** and
-**updated documentation**. If functionality is changed, docstrings
-should be added or updated.
+Any contribution is welcome and should be done through pull requests and/or issues.
+pull requests should include **updated tests** and **updated documentation**. If functionality is changed, docstrings should be added or updated.
+
 
 ## Licensing
 
-The code of this project is licensed under the [European Union Public
-Licence
-(EUPL)](https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12).
+The code of this project is licensed under the [European Union Public Licence (EUPL)](https://joinup.ec.europa.eu/collection/eupl/eupl-text-eupl-12).
