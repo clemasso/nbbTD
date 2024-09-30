@@ -1,7 +1,7 @@
 Package: nbbTD
 Type: Package
 Title: Multiprocessing temporal disaggregation of time series
-Version: 1.0.2
+Version: 1.0.3
 Authors@R: 
     person(given = "Corentin",
            family = "Lemasson",

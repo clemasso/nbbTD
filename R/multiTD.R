@@ -321,7 +321,7 @@ multiTD <- function(benchmarks,
         #### extrapolation
         disagbi_base<-window(rslti[["beta"]], end=c(end(yi_enhanced)[1],freq))
         fbiYi_touse<-if(length(yi_enhanced)>length(yi)) as.numeric(fbiYi[[1]][2]) else as.numeric(fbiYi[[1]][1]) 
-        disagbi<-extrapolate_infra_annual_BI_ratio(disagbi_base, fbiYi_touse, freq, yi_enhanced, xi, conversion)
+        disagbi<-extrapolate_infra_annual_BI_ratio(disagbi_base, fbiYi_touse, freq, yi_enhanced, xi, dBIfixi, conversion)
         
         bi<-window(disagbi,frequency=freq,end=end(xi))
         ebi<-ts(c(window(rslti[["betaSD"]],frequency=freq,end=c(end(yi_enhanced)[1]-1,freq)), rep(NA,(ne+freq))),
