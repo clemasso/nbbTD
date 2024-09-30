@@ -1,7 +1,7 @@
 #' Print function for objects of class 'nbb.multiTD.output'
 #'
 #' @param x an object of class 'nbb.multiTD.output'
-#' @param \dots further arguments passed to or from other methods.
+#' @param \dots further elements to display.
 #' @export
 #'
 print.nbb.multiTD.output <- function(x, ...){
@@ -13,13 +13,13 @@ print.nbb.multiTD.output <- function(x, ...){
 
 #' Summary function for objects of class 'nbb.multiTD.output'
 #'
-#' @param x an object of class 'nbb.multiTD.output'
-#' @param \dots further arguments passed to or from other methods.
+#' @param object an object of class 'nbb.multiTD.output'
+#' @param \dots further elements to display.
 #' @export
 #'
-summary.nbb.multiTD.output <- function(x, ...){
+summary.nbb.multiTD.output <- function(object, ...){
 
-  print(list(fit=x$fit,...))
+  print(list(fit=object$fit,...))
 
 }
 

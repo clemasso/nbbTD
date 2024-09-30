@@ -9,7 +9,7 @@
 \arguments{
 \item{x}{an object of class 'nbb.multiTD.output'}
 
-\item{\dots}{further arguments passed to or from other methods.}
+\item{\dots}{further elements to display.}
 }
 \description{
 Print function for objects of class 'nbb.multiTD.output'

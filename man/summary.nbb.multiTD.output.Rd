@@ -4,12 +4,12 @@
 \alias{summary.nbb.multiTD.output}
 \title{Summary function for objects of class 'nbb.multiTD.output'}
 \usage{
-\method{summary}{nbb.multiTD.output}(x, ...)
+\method{summary}{nbb.multiTD.output}(object, ...)
 }
 \arguments{
-\item{x}{an object of class 'nbb.multiTD.output'}
+\item{object}{an object of class 'nbb.multiTD.output'}
 
-\item{\dots}{further arguments passed to or from other methods.}
+\item{\dots}{further elements to display.}
 }
 \description{
 Summary function for objects of class 'nbb.multiTD.output'

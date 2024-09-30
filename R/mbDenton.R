@@ -108,6 +108,7 @@ mbdenton <- function(indicator,
   vbeta<-rjd3toolkit::result(vres, "ssf.smoothing.array(1)")
   vbeta_ts<-ts(vbeta, frequency = freq, start = start(xt), end = end(xt))
   vbeta_var<-rjd3toolkit::result(vres, "ssf.smoothing.varray(1)")
+  vbeta_var[vbeta_var < 0] <- 0
   ll <- rjd3toolkit::result(vres, "likelihood.ll")
 
   # extrapolation

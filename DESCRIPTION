@@ -1,7 +1,7 @@
 Package: nbbTD
 Type: Package
 Title: Multiprocessing temporal disaggregation of time series
-Version: 1.0.3
+Version: 1.0.3.9000
 Authors@R: 
     person(given = "Corentin",
            family = "Lemasson",
@@ -28,7 +28,7 @@ Remotes:
   github::rjdverse/rjd3sts, 
   github::rjdverse/rjd3tramoseats
 SystemRequirements: Java JRE 17 or higher
-License: EUPL
+License: EUPL | file LICENSE
 Encoding: UTF-8
 Collate: 
     'data.R'
@@ -40,7 +40,7 @@ Collate:
     'run_shiny_app.R'
     'simulation.R'
 VignetteBuilder: knitr
-RoxygenNote: 7.3.1
+RoxygenNote: 7.3.2
 Suggests: 
     knitr,
     rmarkdown
