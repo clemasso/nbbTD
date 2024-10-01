@@ -156,7 +156,7 @@ multiTD <- function(benchmarks,
 
     ## Missing values
     indicators_ts <- replace_empty_col_by_cst(indicators_ts)
-    if (any(is.na(indicators_ts)) || any(is.na(benchmarks_ts)))
+    if (anyNA(indicators_ts) || anyNA(benchmarks_ts))
         stop("missing observations are not handled")
 
     ## Critical value for forecasting annual BI

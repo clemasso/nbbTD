@@ -263,7 +263,7 @@ forecast_series <- function(s, model = c("rw", "mean", "gmeang", "tramo",  "holt
     f <- as.vector(m$mean)
   } else stop("Model not supported")
 
-  if (any(is.na(f))) warning(paste("Some series could not be forecasted", model))
+  if (anyNA(f)) warning(paste("Some series could not be forecasted", model))
 
   return(f)
 }
