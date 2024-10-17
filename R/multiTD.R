@@ -348,7 +348,12 @@ multiTD <- function(benchmarks,
                 warning(paste0(bnamei, ": Forecast of annual BI ratio are only handled with mbDenton. The forecast values were ignored for this series."), call. = FALSE)
             }
 
-            modi_short <- ifelse(modi == "chow-lin", "Ar1", ifelse(modi == "fernandez", "Rw", "RwAr1"))
+            modi_short <- switch(
+                EXPR = modi,
+                `chow-lin` = "Ar1",
+                fernandez = "Rw",
+                "RwAr1"
+            )
             if (length(unique(xi)) > 1) {
                 rslti<-temporaldisaggregation(yi, indicators = as.list(xi), model = modi_short, conversion = conversion)
             } else {
@@ -634,9 +639,7 @@ decimal_date2 <- function(yr, mth, freq){
     if (freq == 12){
         as.numeric(time(ts(start = c(yr, mth), frequency = freq)))
     } else if (freq == 4){
-        qtr<-ifelse(mth<=3,1,
-                    ifelse(mth<=6,2,
-                           ifelse(mth<=9,3,4)))
+        qtr <- (mth + 2L) %/% 3L
         as.numeric(time(ts(start = c(yr, qtr), frequency = freq)))
     } else {
         NULL
