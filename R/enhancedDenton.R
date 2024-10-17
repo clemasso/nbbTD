@@ -291,47 +291,66 @@ extend_benchmark_series <- function(benchmark, indicator, f_biY, conversion = c(
 ## use of simplified algorithm from IMF (cfr. paper 'On the extrapolation with the Denton Proportional Benchmarking method' p8)
 ## note that analytical solution not implemented because it only works when the indicator covers the full year T+1. In that case,
 ## we just extend the benchmarks ratio of one year.
-extrapolate_infra_annual_BI_ratio <- function(s, f_Y, freq, b, i, conversion){
-
-  if (freq == 4){
+extrapolate_infra_annual_BI_ratio <- function(s, f_Y, freq, b, i, s_fixed, conversion){
+  
+  year_T <- end(s)[1]
+  
+  # Check if disagBI ratio is fixed in T
+  s_fixed_yr<-as.numeric(substr(row.names(s_fixed),1,4))
+  fixed_year_T<-ifelse(any(s_fixed_yr == year_T), TRUE, FALSE)
+  
+  if(freq == 4){
     ## Extract last quarterly BI ratio and compute eta
     l <- length(s)
     s_n_2 <- s[l-2]
     s_n_1 <- s[l-1]
     s_n <- s[l]
     eta <- (s_n - f_Y)/3
-
-    ### Compute modified quarterly BI ratio from N-2 to N+4
-    s_n_2_m <- s_n_2 + eta/4
-    s_n_1_m <- s_n_1 + eta/4
-    s_n_m <- s_n - eta/2
-    s_n1_m <- s_n_m - eta
-    s_n2_m <- s_n1_m - eta
-    s_n3_m <- s_n2_m - eta
-    s_n4_m <- s_n3_m - eta
-
-    ### Benchmark approximation for year T
-    year_T <- end(s)[1]
-    i_T <- window(i, start = c(year_T, 1), end = c(year_T, freq))
-    s_m_T <- ts(c(s[l-3], s_n_2_m, s_n_1_m, s_n_m), frequency = freq, start = c(year_T, 1))
-    td_m_T <- s_m_T * i_T
-    td_m_T_Y <- if (conversion == "Sum") as.vector(aggregate(td_m_T)) else as.vector(mean(td_m_T))
-    diff_T <- as.vector(window(b, start = year_T)) - td_m_T_Y
-    diff_T_vec <-rep(diff_T,freq)
-    dist_T_vec <- if (conversion == "Sum") c(0,0.25,0.25,0.5) else freq*c(0,0.25,0.25,0.5)
-    td_m_T_bench <- td_m_T + diff_T_vec*dist_T_vec
-    s_m_T_bench <- td_m_T_bench / i_T
-
-    ### Adjust approximation for year T+1 consequently to preserve QoQ
-    ratio_last <- s_m_T_bench[freq]/s_m_T[freq]
-    ratio_last_vec <- rep(ratio_last,freq)
-    s_m_T1_adj <- c(s_n1_m, s_n2_m, s_n3_m, s_n4_m) * ratio_last_vec
-
-    ### Quarterly BI ratio incl. extrapolation for year T+1 (+ modification for year T)
-    s_0 <- window(s, end = c(year_T - 1, freq))
-    sf <- ts(c(s_0, s_m_T_bench, s_m_T1_adj), frequency = freq, start = start(s))
-
-  } else if (freq == 12){
+    
+    if(!fixed_year_T){
+      
+      ### Compute modified quarterly BI ratio from N-2 to N+4
+      s_n_2_m <- s_n_2 + eta/4
+      s_n_1_m <- s_n_1 + eta/4
+      s_n_m <- s_n - eta/2
+      s_n1_m <- s_n_m - eta
+      s_n2_m <- s_n1_m - eta
+      s_n3_m <- s_n2_m - eta
+      s_n4_m <- s_n3_m - eta
+      
+      ### Benchmark approximation for year T
+      i_T <- window(i, start = c(year_T, 1), end = c(year_T, freq))
+      s_m_T <- ts(c(s[l-3], s_n_2_m, s_n_1_m, s_n_m), frequency = freq, start = c(year_T, 1))
+      td_m_T <- s_m_T * i_T
+      td_m_T_Y <- if(conversion == "Sum") as.vector(aggregate(td_m_T)) else as.vector(mean(td_m_T))
+      diff_T <- as.vector(window(b, start = year_T)) - td_m_T_Y 
+      diff_T_vec <-rep(diff_T,freq) 
+      dist_T_vec <- if(conversion == "Sum") c(0,0.25,0.25,0.5) else freq*c(0,0.25,0.25,0.5)
+      td_m_T_bench <- td_m_T + diff_T_vec*dist_T_vec
+      s_m_T_bench <- td_m_T_bench / i_T
+      
+      ### Adjust approximation for year T+1 consequently to preserve QoQ
+      ratio_last <- s_m_T_bench[freq]/s_m_T[freq]
+      ratio_last_vec <- rep(ratio_last,freq)
+      s_m_T1_adj <- c(s_n1_m, s_n2_m, s_n3_m, s_n4_m) * ratio_last_vec
+      
+      ### Quarterly BI ratio incl. extrapolation for year T+1 (+ modification for year T)
+      s_0 <- window(s, end = c(year_T - 1, freq))
+      sf <- ts(c(s_0, s_m_T_bench, s_m_T1_adj), frequency = freq, start = start(s))
+    }else{
+      
+      ### Compute modified quarterly BI ratio from N-1 to N+4
+      s_n1_m <- s_n - eta - eta/2
+      s_n2_m <- s_n - 2*eta - eta/2
+      s_n3_m <- s_n - 3*eta - eta/2
+      s_n4_m <- s_n - 4*eta - eta/2
+      
+      ### Quarterly BI ratio incl. extrapolation for year T+1
+      s_m_T1_adj <- c(s_n1_m, s_n2_m, s_n3_m, s_n4_m)
+      sf <- ts(c(s,s_m_T1_adj), frequency = freq, start = start(s))
+    }
+    
+  } else if(freq == 12){
     ## Extract last monthly BI ratio and compute eta
     l <- length(s)
     s_n_8 <- s[l-8]
@@ -344,51 +363,70 @@ extrapolate_infra_annual_BI_ratio <- function(s, f_Y, freq, b, i, conversion){
     s_n_1 <- s[l-1]
     s_n <- s[l]
     eta <- (s_n - f_Y)/3
-
-    ### Compute modified monthly BI ratio from N-8 to N+12
-    s_n_8_m <- s_n_8 + eta/12
-    s_n_7_m <- s_n_7 + eta/12
-    s_n_6_m <- s_n_6 + eta/12
-    s_n_5_m <- s_n_5 + eta/12
-    s_n_4_m <- s_n_4 + eta/12
-    s_n_3_m <- s_n_3 + eta/12
-    s_n_2_m <- s_n_2 - eta/6
-    s_n_1_m <- s_n_1 - eta/6
-    s_n_m <- s_n - eta/6
-    s_n1_m <- s_n_m - 17*eta/39
-    s_n2_m <- s_n1_m - 17*eta/39
-    s_n3_m <- s_n2_m - 17*eta/39
-    s_n4_m <- s_n3_m - 17*eta/39
-    s_n5_m <- s_n4_m - 17*eta/39
-    s_n6_m <- s_n5_m - 17*eta/39
-    s_n7_m <- s_n6_m - 17*eta/39
-    s_n8_m <- s_n7_m - 17*eta/39
-    s_n9_m <- s_n8_m - 17*eta/39
-    s_n10_m <- s_n9_m - 17*eta/39
-    s_n11_m <- s_n10_m - 17*eta/39
-    s_n12_m <- s_n11_m - 17*eta/39
-
-    ### Benchmark approximation for year T
-    year_T <- end(s)[1]
-    i_T <- window(i, start = c(year_T, 1), end = c(year_T, freq))
-    s_m_T <- ts(c(s[l-11], s[l-10], s[l-9], s_n_8_m, s_n_7_m, s_n_6_m, s_n_5_m, s_n_4_m, s_n_3_m, s_n_2_m, s_n_1_m, s_n_m), frequency = freq, start = c(year_T, 1))
-    td_m_T <- s_m_T * i_T
-    td_m_T_Y <- if (conversion == "Sum") as.vector(aggregate(td_m_T)) else as.vector(mean(td_m_T))
-    diff_T <- as.vector(window(b, start = year_T)) - td_m_T_Y
-    diff_T_vec <- rep(diff_T,freq)
-    dist_T_vec <- if (conversion == "Sum") c(0,0,0,0.08,0.08,0.08,0.08,0.09,0.09,0.16,0.17,0.17) else freq*c(0,0,0,0.08,0.08,0.08,0.08,0.09,0.09,0.16,0.17,0.17)
-    td_m_T_bench <- td_m_T + diff_T_vec*dist_T_vec
-    s_m_T_bench <- td_m_T_bench / i_T
-
-    ### Adjust approximation for year T+1 consequently to preserve QoQ
-    ratio_last <- s_m_T_bench[freq]/s_m_T[freq]
-    ratio_last_vec <- rep(ratio_last,freq)
-    s_m_T1_adj <- c(s_n1_m, s_n2_m, s_n3_m, s_n4_m, s_n5_m, s_n6_m, s_n7_m, s_n8_m, s_n9_m, s_n10_m, s_n11_m, s_n12_m) * ratio_last_vec
-
-    ### Monthly BI ratio incl. extrapolation for year T+1 (+ modification for year T)
-    s_0 <- window(s, end = c(year_T - 1, freq))
-    sf <- ts(c(s_0, s_m_T_bench, s_m_T1_adj), frequency = freq, start = start(s))
+    
+    if(!fixed_year_T){
+      ### Compute modified monthly BI ratio from N-8 to N+12
+      s_n_8_m <- s_n_8 + eta/12
+      s_n_7_m <- s_n_7 + eta/12
+      s_n_6_m <- s_n_6 + eta/12
+      s_n_5_m <- s_n_5 + eta/12
+      s_n_4_m <- s_n_4 + eta/12
+      s_n_3_m <- s_n_3 + eta/12
+      s_n_2_m <- s_n_2 - eta/6
+      s_n_1_m <- s_n_1 - eta/6
+      s_n_m <- s_n - eta/6
+      s_n1_m <- s_n_m - 17*eta/39
+      s_n2_m <- s_n1_m - 17*eta/39
+      s_n3_m <- s_n2_m - 17*eta/39
+      s_n4_m <- s_n3_m - 17*eta/39
+      s_n5_m <- s_n4_m - 17*eta/39
+      s_n6_m <- s_n5_m - 17*eta/39
+      s_n7_m <- s_n6_m - 17*eta/39
+      s_n8_m <- s_n7_m - 17*eta/39
+      s_n9_m <- s_n8_m - 17*eta/39
+      s_n10_m <- s_n9_m - 17*eta/39
+      s_n11_m <- s_n10_m - 17*eta/39
+      s_n12_m <- s_n11_m - 17*eta/39
+      
+      ### Benchmark approximation for year T
+      i_T <- window(i, start = c(year_T, 1), end = c(year_T, freq))
+      s_m_T <- ts(c(s[l-11], s[l-10], s[l-9], s_n_8_m, s_n_7_m, s_n_6_m, s_n_5_m, s_n_4_m, s_n_3_m, s_n_2_m, s_n_1_m, s_n_m), frequency = freq, start = c(year_T, 1))
+      td_m_T <- s_m_T * i_T
+      td_m_T_Y <- if(conversion == "Sum") as.vector(aggregate(td_m_T)) else as.vector(mean(td_m_T))
+      diff_T <- as.vector(window(b, start = year_T)) - td_m_T_Y
+      diff_T_vec <- rep(diff_T,freq)
+      dist_T_vec <- if(conversion == "Sum") c(0,0,0,0.08,0.08,0.08,0.08,0.09,0.09,0.16,0.17,0.17) else freq*c(0,0,0,0.08,0.08,0.08,0.08,0.09,0.09,0.16,0.17,0.17)
+      td_m_T_bench <- td_m_T + diff_T_vec*dist_T_vec
+      s_m_T_bench <- td_m_T_bench / i_T
+      
+      ### Adjust approximation for year T+1 consequently to preserve QoQ
+      ratio_last <- s_m_T_bench[freq]/s_m_T[freq]
+      ratio_last_vec <- rep(ratio_last,freq)
+      s_m_T1_adj <- c(s_n1_m, s_n2_m, s_n3_m, s_n4_m, s_n5_m, s_n6_m, s_n7_m, s_n8_m, s_n9_m, s_n10_m, s_n11_m, s_n12_m) * ratio_last_vec
+      
+      ### Monthly BI ratio incl. extrapolation for year T+1 (+ modification for year T)
+      s_0 <- window(s, end = c(year_T - 1, freq))
+      sf <- ts(c(s_0, s_m_T_bench, s_m_T1_adj), frequency = freq, start = start(s))
+    }else{
+      
+      ### Compute modified quarterly BI ratio from N-1 to N+4
+      s_n1_m <- s_n - 17*eta/39 - eta/6
+      s_n2_m <- s_n - 2*17*eta/39 - eta/6
+      s_n3_m <- s_n - 3*17*eta/39 - eta/6
+      s_n4_m <- s_n - 4*17*eta/39 - eta/6
+      s_n5_m <- s_n - 5*17*eta/39 - eta/6
+      s_n6_m <- s_n - 6*17*eta/39 - eta/6
+      s_n7_m <- s_n - 7*17*eta/39 - eta/6
+      s_n8_m <- s_n - 8*17*eta/39 - eta/6
+      s_n9_m <- s_n - 9*17*eta/39 - eta/6
+      s_n10_m <- s_n - 10*17*eta/39 - eta/6
+      s_n11_m <- s_n - 11*17*eta/39 - eta/6
+      s_n12_m <- s_n - 12*17*eta/39 - eta/6
+      
+      ### Quarterly BI ratio incl. extrapolation for year T+1
+      s_m_T1_adj <- c(s_n1_m, s_n2_m, s_n3_m, s_n4_m, s_n5_m, s_n6_m, s_n7_m, s_n8_m, s_n9_m, s_n10_m, s_n11_m, s_n12_m)
+      sf <- ts(c(s,s_m_T1_adj), frequency = freq, start = start(s))
+    }
   }
-
   return(sf)
 }
