@@ -509,7 +509,7 @@ multiTD_fromXLSX <- function(path_data,
 
     models<-as.data.frame(read_excel(path_data, sheet = "models"))
     if (nrow(models) != 0){
-        models_list_form<-split(models$model, seq(nrow(models)))
+        models_list_form<-split(models$model, seq_len(nrow(models)))
         names(models_list_form)<-models$series_name
     } else {
         warning("No model defined in the input file. mbDenton was used for each series by default.", call. = FALSE)
@@ -535,7 +535,7 @@ multiTD_fromXLSX <- function(path_data,
     forecast_annual_BI<-as.data.frame(read_excel(path_data, sheet = "forecast_annual_BI"))
     if (nrow(forecast_annual_BI) != 0){
         colnames(forecast_annual_BI)<-c("series_name","Y+1","Y+2")
-        forecast_annual_BI_list<-split(forecast_annual_BI[,2:3], seq(nrow(forecast_annual_BI)))
+        forecast_annual_BI_list<-split(forecast_annual_BI[,2:3], seq_len(nrow(forecast_annual_BI)))
         forecast_annual_BI_list_form<-lapply(forecast_annual_BI_list, function(x) unlist(x[1,]))
         names(forecast_annual_BI_list_form)<- forecast_annual_BI$series_name
     } else {
