@@ -40,7 +40,7 @@ plot_growth_chart <- function(benchmarks, indicators, series_name, call.conversi
   # benchmark
   if (is.matrix(benchmarks)){
     y<-benchmarks[,series_name]
-  } else{
+  } else {
     y<-benchmarks
   }
 
@@ -53,7 +53,7 @@ plot_growth_chart <- function(benchmarks, indicators, series_name, call.conversi
     } else if (!is.null(dim(x))){
       x<-x[,1] #only consider first indicator
     }
-  } else{
+  } else {
     x<-indicators
   }
 
@@ -62,7 +62,7 @@ plot_growth_chart <- function(benchmarks, indicators, series_name, call.conversi
   # compute annual growth rate
   if (grepl("Average", call.conversion, fixed = TRUE)){
     xT <- aggregate.ts(x_in, nfreq = 1, FUN = mean)
-  } else{
+  } else {
     xT <- aggregate.ts(x_in, nfreq = 1, FUN = sum)
   }
   xT <- ts(xT, start = start(y))
@@ -115,7 +115,7 @@ plot_annual_bi <- function(bi_ts, f_bi_ts, series_name, scaled = FALSE, ...){
     ts.plot(bi_ts, gpars=list(xlab="", xaxt="n", ylab="", type = "o", lwd=2, pch=19, cex=1.2, las=2, col = "blue", xlim = c(Y1[1], YN[1]+nf)), ylim = c(min(bi_ts, f_bi_ts, na.rm = TRUE), max(bi_ts, f_bi_ts, na.rm = TRUE)), ...)
     lines(f_bi_ts, type = "o", lwd=2, pch=19, cex=1.2, las=2, col = "red")
     axis(1, at = seq(Y1[1], YN[1]+nf, by = 1), las=2)
-  } else{
+  } else {
     ts.plot(bi_scaled_ts, gpars=list(xlab="", xaxt="n", ylab="", type = "o", lwd=2, pch=19, cex=1.2, las=2, col = "blue", xlim = c(Y1[1], YN[1]+nf)), ylim = c(min(bi_scaled_ts, bi_f_scaled_ts, na.rm = TRUE), max(bi_scaled_ts, bi_f_scaled_ts, na.rm = TRUE)), ...)
     lines(bi_f_scaled_ts, type = "o", lwd=2, pch=19, cex=1.2, las=2, col = "red")
     axis(1, at = seq(Y1[1], YN[1]+nf, by = 1), las=2)

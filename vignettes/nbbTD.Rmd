@@ -177,11 +177,11 @@ During the execution of the code, a (non-exhaustive) number of tests are perform
 ```{r, eval = FALSE}
 # Call
 multiTD(
-    benchmarks, 
+    benchmarks,
     indicators,
     model = "mbDenton",
     outliers = NULL,
-    disagBIfixed = NULL, 
+    disagBIfixed = NULL,
     forecastBI = c("none", "auto", "userdefined+none", "userdefined+auto"),
     forecastBI.values = NULL,
     forecastBI.quantile = c("q.95", "q.80", "q.90", "q.99", "q.999"),
@@ -230,7 +230,7 @@ multiTD_fromXLSX(path_data,
                  forecastBI = c("none", "auto", "userdefined+none", "userdefined+auto"),
                  forecastBI.quantile = c("q.95", "q.80", "q.90", "q.99", "q.999"),
                  freezeT1 = FALSE,
-                 conversion = c("Sum", "Average"), 
+                 conversion = c("Sum", "Average"),
                  path_output = NULL
                  )
 ```
@@ -307,10 +307,10 @@ The function **mbdenton()** performs a single processing temporal disaggregation
 
 ```{r, eval = FALSE}
 # Call
-mbdenton (indicator, 
-          benchmark, 
-          outliers = NULL, 
-          outliers.intensity = 10, 
+mbdenton (indicator,
+          benchmark,
+          outliers = NULL,
+          outliers.intensity = 10,
           manual_disagBI = NULL,
           conversion = c("Sum", "Average"))
 ```

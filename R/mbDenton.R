@@ -49,7 +49,7 @@ mbdenton <- function(indicator,
   # prepare data
   freq<-frequency(indicator)
   yc<-matrix(nrow=freq*length(benchmark), ncol=1)
-  yc[freq*(1:length(benchmark)),1]<-benchmark
+  yc[freq*(seq_along(benchmark)),1]<-benchmark
   xt<-ts(indicator, frequency = freq, start = start(benchmark), end = c(end(benchmark)[1], freq))
   time_vect<-as.vector(time(indicator))
 
