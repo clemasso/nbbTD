@@ -7,6 +7,17 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-05-12
+
+### Added
+
+* Chow-Lin without cst
+
+### Changed 
+
+* Ensure compatibility with latest rjdverse packages
+
+## [1.0.3] - 2023-10-05
 
 ## [1.0.2] - 2023-08-23
 

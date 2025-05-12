@@ -19,12 +19,14 @@
 #'   must be provided for each quarter/month of the year.
 #' @param conversion type of consistency between the annual benchmarks and the
 #'   infra-annual indicators.
+#' @param series_name Character. Name of the series. Optional argument used to
+#'   customize warning message if any.
 #' @import data.table rjd3toolkit rjd3sts
 #' @return a list
 #' @export
 #' @examples
-#' Y<-rjd3toolkit::aggregate(rjd3toolkit::retail$RetailSalesTotal, 1)
-#' x<-rjd3toolkit::aggregate(rjd3toolkit::retail$FoodAndBeverageStores, 4)
+#' Y<-rjd3toolkit::aggregate(rjd3toolkit::Retail$RetailSalesTotal, 1)
+#' x<-rjd3toolkit::aggregate(rjd3toolkit::Retail$FoodAndBeverageStores, 4)
 #'
 #' outliers<-c(2008.75,2009.00)
 #' outliers.intensity<-c(10,5)
@@ -39,7 +41,9 @@ mbdenton <- function(indicator,
                      outliers = NULL,
                      outliers.intensity = 10,
                      manual_disagBI = NULL,
-                     conversion = c("Sum", "Average")){
+                     conversion = c("Sum", "Average"),
+                     series_name = NULL,
+                     include_warnings = TRUE){
 
   if (is.matrix(benchmark)){
     if (ncol(benchmark)>1) stop("Mutli-processing not allowed. You can use function multiTD for that.")
@@ -72,7 +76,13 @@ mbdenton <- function(indicator,
       mbi[, yt := yt + (discrepancy*w)]
       discrepancies_T <- discrepancies_T[, discrepancy_perc := discrepancy / yT_ym]
       if (max(abs(discrepancies_T$discrepancy_perc)) > 0.001){
-        warning("Significant discrepancy was found using the user-defined disaggregated bi ratios. This was corrected automatically prorata.", call. = FALSE)
+        if(include_warnings) {
+            if(is.null(series_name)){
+                warning("Significant discrepancy was found using the user-defined disaggregated bi ratios. This was corrected automatically prorata.", call. = FALSE)
+            }else{
+                warning(paste0(series_name, ": Significant discrepancy was found using the user-defined disaggregated bi ratios. This was corrected automatically prorata."), call. = FALSE)
+            }
+        }
       }
     }
     yc_manual<-mbi[, .(period, yc = cumsum(yt)), by = "year"]

@@ -10,7 +10,9 @@ mbdenton(
   outliers = NULL,
   outliers.intensity = 10,
   manual_disagBI = NULL,
-  conversion = c("Sum", "Average")
+  conversion = c("Sum", "Average"),
+  series_name = NULL,
+  include_warnings = TRUE
 )
 }
 \arguments{
@@ -34,6 +36,9 @@ must be provided for each quarter/month of the year.}
 
 \item{conversion}{type of consistency between the annual benchmarks and the
 infra-annual indicators.}
+
+\item{series_name}{Character. Name of the series. Optional argument used to
+customize warning message if any.}
 }
 \value{
 a list
@@ -44,8 +49,8 @@ including the possibility to add outliers (shifts in the disaggregated BI
 ratio) and manual figures for the disaggregated BI ratio.
 }
 \examples{
-Y<-rjd3toolkit::aggregate(rjd3toolkit::retail$RetailSalesTotal, 1)
-x<-rjd3toolkit::aggregate(rjd3toolkit::retail$FoodAndBeverageStores, 4)
+Y<-rjd3toolkit::aggregate(rjd3toolkit::Retail$RetailSalesTotal, 1)
+x<-rjd3toolkit::aggregate(rjd3toolkit::Retail$FoodAndBeverageStores, 4)
 
 outliers<-c(2008.75,2009.00)
 outliers.intensity<-c(10,5)

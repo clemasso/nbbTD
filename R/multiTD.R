@@ -22,11 +22,12 @@
 #'   for example when we'd like to use more than one indicator in a Chow-Lin
 #'   model. Only quarterly or monthly indicators are handled.
 #' @param model Temporal disaggregation model to consider for each series.
-#'   Possible models are currently "mbdenton", "chow-lin", "fernandez" and
-#'   "litterman". The model to use can be a character string (when the same
-#'   model must be used for all series) or a list of structured definition of
-#'   the models. The name of the series must be submitted first. This must be
-#'   followed by an equal sign and the model's name to use for the series.
+#'   Possible models are currently "mbdenton", "chow-lin", "fernandez",
+#'   "litterman" and "chow-lin_no_cst". The model to use can be a character
+#'   string (when the same model must be used for all series) or a list of
+#'   structured definition of the models. The name of the series must be
+#'   submitted first. This must be followed by an equal sign and the model's
+#'   name to use for the series.
 #' @param outliers Level shift(s) in the Benchmark-to-Indicator ratio for the
 #'   model-based Denton. Must be specified as a list of structured definition of
 #'   the outlier periods and their intensity for each series. The name of the
@@ -83,12 +84,12 @@
 #' @export
 #' @examples
 #' # retail data, 2 benchmarks series to disaggregate
-#' Y<-cbind(rjd3toolkit::aggregate(rjd3toolkit::retail$RetailSalesTotal, 1),
-#'          rjd3toolkit::aggregate(rjd3toolkit::retail$ClothingStores, 1))
+#' Y<-cbind(rjd3toolkit::aggregate(rjd3toolkit::Retail$RetailSalesTotal, 1),
+#'          rjd3toolkit::aggregate(rjd3toolkit::Retail$ClothingStores, 1))
 #' colnames(Y)<-c("retail","clothing")
-#' x<-cbind(rjd3toolkit::retail$FoodAndBeverageStore,
-#'          rjd3toolkit::retail$AutomobileDealers,
-#'          rjd3toolkit::retail$WomensClothingStores)
+#' x<-cbind(rjd3toolkit::Retail$FoodAndBeverageStore,
+#'          rjd3toolkit::Retail$AutomobileDealers,
+#'          rjd3toolkit::Retail$WomensClothingStores)
 #' colnames(x)<-c("retail_food", "retail_cars", "clothing_womens")
 #'
 #' # Example 1: Chow-Lin (with 2 indicators) and standard Denton
@@ -183,7 +184,7 @@ multiTD <- function(benchmarks,
     bi_annual_falt<-data.frame(matrix(nrow=2,ncol=nc))
     colnames(bi_annual)<-colnames(bi_annual_f)<-colnames(bi_annual_falt)<-colnames(benchmarks_ts)
     td_models<-data.frame(matrix(nrow=nc,ncol=1))
-    colnames(td_models)<-"td_model"
+    colnames(td_models)<-"model"
     rownames(td_models)<-colnames(benchmarks_ts)
     fit<-data.frame(matrix(nrow=nc,ncol=4))
     rownames(fit)<-colnames(benchmarks_ts)
@@ -215,7 +216,7 @@ multiTD <- function(benchmarks,
         } else {
             modi<-tolower(model)
         }
-        if (!modi %in% c("mbdenton", "chow-lin", "fernandez", "litterman")){
+        if (!modi %in% c("mbdenton", "chow-lin", "fernandez", "litterman", "chow-lin_no_cst")){
             modi<-"mbdenton"
             warning(paste0(bnamei, ": model not allowed. mbDenton was used instead by default."), call. = FALSE)
         }
@@ -287,7 +288,7 @@ multiTD <- function(benchmarks,
 
             ### Standard model-based Denton
             if (is.null(fbiYi[[1]])){
-                rslti<-mbdenton(xi, yi, outliers=outli, outliers.intensity=outli_int, manual_disagBI=dBIfixi, conversion)
+                rslti<-mbdenton(xi, yi, outliers=outli, outliers.intensity=outli_int, manual_disagBI=dBIfixi, conversion, series_name = bnamei)
 
                 bi<-rslti[["beta"]]
                 ebi<-rslti[["betaSD"]]
@@ -316,7 +317,7 @@ multiTD <- function(benchmarks,
                 }
 
                 #### run model
-                rslti<-mbdenton(xi, yi_enhanced, outliers=outli, outliers.intensity=outli_int, manual_disagBI=dBIfixi, conversion)
+                rslti<-mbdenton(xi, yi_enhanced, outliers=outli, outliers.intensity=outli_int, manual_disagBI=dBIfixi, conversion, series_name = bnamei)
 
                 #### extrapolation
                 disagbi_base<-window(rslti[["beta"]], end=c(end(yi_enhanced)[1],freq))
@@ -335,7 +336,7 @@ multiTD <- function(benchmarks,
             }
 
             ## Chow-Lin and variants
-        } else if (modi %in% c("chow-lin", "fernandez", "litterman")){
+        } else if (modi %in% c("chow-lin", "fernandez", "litterman", "chow_lin_no_cst")){
 
             if (!is.null(outli)){
                 warning(paste0(bnamei, ": outliers are only handled with mbDenton. The outlier(s) provided by the user were ignored for this series."), call. = FALSE)
@@ -348,16 +349,21 @@ multiTD <- function(benchmarks,
                 warning(paste0(bnamei, ": Forecast of annual BI ratio are only handled with mbDenton. The forecast values were ignored for this series."), call. = FALSE)
             }
 
+            is_cst <- ifelse(modi == "chow-lin", TRUE, FALSE)
             modi_short <- switch(
                 EXPR = modi,
                 `chow-lin` = "Ar1",
-                fernandez = "Rw",
-                "RwAr1"
+                `chow-lin_no_cst` = "Ar1",
+                `litterman` = "RwAr1",
+                "Rw"
             )
+
             if (length(unique(xi)) > 1) {
-                rslti<-temporaldisaggregation(yi, indicators = as.list(xi), model = modi_short, conversion = conversion)
+                is_avg <- ifelse(conversion == "Average", TRUE, FALSE)
+                rslti<-temporal_disaggregation(yi, constant = is_cst, indicators = as.list(xi), model = modi_short, average = is_avg)
             } else {
-                rslti<-temporaldisaggregation(yi, model = modi_short, conversion = conversion) # case without indicator
+                nfcsts <- length(xi) - length(yi) * freq
+                rslti<-temporal_disaggregation(yi, constant = is_cst, model = modi_short, average = is_avg, nfcsts = nfcsts) # case without indicator
             }
 
             disag<-rslti$estimation$disagg
@@ -365,9 +371,13 @@ multiTD <- function(benchmarks,
             bi<-disag/xi1 # BI ratio of the first indicator
             ebi<-edisag/xi1
             parameters<-list(rho = rslti$estimation$parameter, coef = rslti$regression$model, cov = rslti$regression$cov)
-            decomp<-list(regeffect = rslti$estimation$regeffect, smoothingpart = disag - rslti$estimation$regeffect)
-            ll<-rslti$likelihood$ll
-
+            if(is.null(rslti$estimation$regeffect)){
+                decomp<-list(regeffect = ts(rep(0, length(disag)), start = disag, frequency = frequency(disag)),
+                             smoothingpart = disag)
+            }else{
+                decomp<-list(regeffect = rslti$estimation$regeffect, smoothingpart = disag - rslti$estimation$regeffect)
+                ll<-rslti$likelihood$ll
+            }
             if (ne >= freq){
                 f_y1<-calc_implicit_forecast_annual_BI_ratio(disag, xi1, start=end(yi)[1]+1, conversion=conversion)
                 fbiYi<-list(f=c("Y+1"=f_y1[1], "Y+2"=f_y1[2]), falt=NULL)
@@ -379,12 +389,12 @@ multiTD <- function(benchmarks,
         ## Relevancy of outliers
         if (modi == "mbdenton" && !is.null(outli)){
             yi_used<-if (enhanced) yi_enhanced else yi
-            rsltiNO<-mbdenton(xi, yi_used, outliers=NULL, manual_disagBI=dBIfixi, conversion=conversion)
+            rsltiNO<-mbdenton(xi, yi_used, outliers=NULL, manual_disagBI=dBIfixi, conversion=conversion, series_name = bnamei, include_warnings = FALSE)
             lr_test(ll1=ll, ll2=rsltiNO$ll, bnamei)
         }
 
         ## Check rho estimate with Chow-Lin
-        if (modi %in% c("chow-lin", "litterman")){
+        if (modi %in% c("chow-lin", "chow-lin_no_cst", "litterman")){
             rho_test(rho=rslti$estimation$parameter, bnamei)
         }
 
@@ -441,8 +451,8 @@ multiTD <- function(benchmarks,
         writeData(wb, "bi_annual", data.frame(date=as.Date.yearmon(time(benchmarks_ts)), out$bi_annual), startRow = 1, startCol = 1)
         writeData(wb, "bi_annual_f", data.frame(date=as.Date.yearmon(time(out$bi_annual_f)), out$bi_annual_f), startRow = 1, startCol = 1)
         writeData(wb, "bi_annual_falt", data.frame(date=as.Date.yearmon(time(out$bi_annual_falt)), out$bi_annual_falt), startRow = 1, startCol = 1)
-        writeData(wb, "td_models", td_models, startRow = 1, startCol = 1)
-        writeData(wb, "check_fit", fit, startRow = 1, startCol = 1)
+        writeData(wb, "td_models", td_models, startRow = 1, startCol = 1, rowNames = TRUE)
+        writeData(wb, "check_fit", fit, startRow = 1, startCol = 1, rowNames = TRUE)
 
         saveWorkbook(wb, file = path_xlsx, overwrite = TRUE)
     }
