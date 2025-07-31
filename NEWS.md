@@ -7,6 +7,11 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+* add possibility to have series with different starting/ending dates
+* Bug fixed with small and/or irregular series
+
 ## [1.1.0] - 2025-05-12
 
 ### Added

@@ -169,7 +169,7 @@ Use help('name of the functions') or ?'name of the functions' for more informati
 
 ### multiTD()
 
-The function **multiTD()** performs multiprocessing (or single processing if there is only one series) temporal disaggregation of time series of an annual to quarterly or monthly set of time series.Either the sum or the average consistency between the annual benchmarks and the quarterly or monthly indicators are handled.
+The function **multiTD()** performs multiprocessing (or single processing if there is only one series) temporal disaggregation of time series of an annual to quarterly or monthly set of time series. Either the sum or the average consistency between the annual benchmarks and the quarterly or monthly indicators are handled.
 
 During the execution of the code, a (non-exhaustive) number of tests are performed and warnings are returned to assist the user in the analysis of the results and for the specification of the models. It is strongly recommended to read carefully each warning message. 
 
@@ -191,7 +191,7 @@ multiTD(
 )
 ```
 
-**benchmarks** and **indicators**: The datasets containing the benchmarks and the indicators series must respect some rules described in the documentation of the function (see ?multiTD). In particular, indicators name must start with the name of the related benchmark series but the name may be extended using an underscore. This is for the sake of security to avoid associating the wrong indicator to a benchmark series. Benchmark and indicator series can be imported into RStudio from anywhere. If the data are located in an Excel file, they could be imported using for examplethe function **read_excel** from the package 'readxl'. 
+**benchmarks** and **indicators**: The datasets containing the benchmarks and the indicators series must respect some rules described in the documentation of the function (see ?multiTD). In particular, indicators name must start with the name of the related benchmark series but the name may be extended using an underscore. This is for the sake of security to avoid associating the wrong indicator to a benchmark series. Benchmark and indicator series can be imported into RStudio from anywhere. If the data are located in an Excel file, they could be imported using for example the function **read_excel** from the package 'readxl'. 
 
 **model**: allows the user to choose currently between five models: 'mbDenton', 'Chow-Lin', 'Fernandez' and 'Litterman', 'Chow-Lin_no_cst'. If the selected model is the same for all the series, it can be specified as a string. If the model is different between the series, the user must provide a structured list. The name of the series must be submitted first and must be followed by an equal sign and the model's name (e.g. list(retail="Chow-Lin", clothing="mbDenton")). 'mbDenton' is the method by default. Note that the difference between 'Chow-Lin' and 'Chow-Lin_no_cst' lies in the inclusion or not of a constant term in the regression. 
 

@@ -106,8 +106,8 @@ plot_annual_bi <- function(bi_ts, f_bi_ts, series_name, scaled = FALSE, ...){
   nf <- length(f_bi_ts)
 
   if (scaled){
-    bi_scaled_ts <- 100 * bi_ts / mean(bi_ts)
-    bi_f_scaled_ts <- 100 * f_bi_ts / mean(bi_ts)
+    bi_scaled_ts <- 100 * bi_ts / mean(bi_ts, na.rm = TRUE)
+    bi_f_scaled_ts <- 100 * f_bi_ts / mean(bi_ts, na.rm = TRUE)
   }
 
   # plot results

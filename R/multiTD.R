@@ -143,144 +143,182 @@ multiTD <- function(benchmarks,
     # I. Pre-processing
 
     ## Conversion of benchmarks and indicators to ts object
-    benchmarks_ts<-convert_to_ts(benchmarks)
-    indicators_ts<-convert_to_ts(indicators)
-    freq<-frequency(indicators_ts)
+    benchmarks_ts <- convert_to_ts(benchmarks)
+    indicators_ts <- convert_to_ts(indicators)
+    indicators_ts <- replace_empty_col_by_cst(indicators_ts) # deal with missing indicators
+
+    freq <- frequency(indicators_ts)
     if (!freq %in% c(4,12))
-        stop("only monthly or quarterly indicators are allowed")
+        stop("only monthly or quarterly indicators are currently allowed")
     if (!frequency(benchmarks_ts) == 1)
-        stop("only annual benchmarks are allowed")
-    if (time(indicators_ts)[1]%%1!=0)
-        stop("indicator series must start at the beginning of the year")
+        stop("only annual benchmarks are currently allowed")
     if (!all(start(benchmarks_ts) == start(indicators_ts)))
-        stop("benchmarks series and indicators do not start at the same time")
-
-    ## Missing values
-    indicators_ts <- replace_empty_col_by_cst(indicators_ts)
-    if (anyNA(indicators_ts) || anyNA(benchmarks_ts))
-        stop("missing observations are not handled")
-
-    ## Critical value for forecasting annual BI
-    nobs_bench<-min(if (is.matrix(benchmarks_ts)) nrow(benchmarks_ts) else length(benchmarks_ts),100)
-    qx<-table_rw[series_length == nobs_bench, get(forecastBI.quantile)]
+        stop("'benchmarks' and 'indicators' datasets must start at the same time")
 
     # II. Processing
 
+    ## Initialize output
     out <- list()
     class(out) <- "nbb.multiTD.output"
-    if (is.matrix(benchmarks_ts)){
-        nc<-ncol(benchmarks_ts)
-        nr<-ifelse(is.matrix(indicators_ts), nrow(indicators_ts), length(indicators_ts))
-        nrb<-nrow(benchmarks_ts)
+
+    if (is.mts(benchmarks_ts)){
+        nc <- ncol(benchmarks_ts)
+        nr <- ifelse(is.mts(indicators_ts), nrow(indicators_ts), length(indicators_ts))
+        nrb <- nrow(benchmarks_ts)
     } else {
-        nc<-1
-        nr<-ifelse(is.matrix(indicators_ts), nrow(indicators_ts), length(indicators_ts))
-        nrb<-length(benchmarks_ts)
+        nc <- 1
+        nr <- ifelse(is.mts(indicators_ts), nrow(indicators_ts), length(indicators_ts))
+        nrb <- length(benchmarks_ts)
     }
-    td_series<-td_series_stderr<-td_bi<-td_bi_stderr<-data.frame(matrix(nrow=nr,ncol=nc))
-    colnames(td_series)<-colnames(td_series_stderr)<-colnames(td_bi)<-colnames(td_bi_stderr)<-colnames(benchmarks_ts)
-    bi_annual<-data.frame(matrix(nrow=nrb,ncol=nc))
-    bi_annual_f<-data.frame(matrix(nrow=2,ncol=nc))
-    bi_annual_falt<-data.frame(matrix(nrow=2,ncol=nc))
-    colnames(bi_annual)<-colnames(bi_annual_f)<-colnames(bi_annual_falt)<-colnames(benchmarks_ts)
-    td_models<-data.frame(matrix(nrow=nc,ncol=1))
-    colnames(td_models)<-"model"
-    rownames(td_models)<-colnames(benchmarks_ts)
-    fit<-data.frame(matrix(nrow=nc,ncol=4))
-    rownames(fit)<-colnames(benchmarks_ts)
-    colnames(fit)<-c("Ols %Y on %X tstat","Ols %Y on %X pval","Ols %BI on %X tstat","Ols %BI on %X pval")
+
+    td_series <- td_series_stderr <- td_bi <- td_bi_stderr <- data.frame(matrix(nrow = nr, ncol = nc))
+    bi_annual <- data.frame(matrix(nrow = nrb, ncol = nc))
+    bi_annual_f <- data.frame(matrix(nrow = 2, ncol = nc))
+    bi_annual_falt <- data.frame(matrix(nrow = 2, ncol = nc))
+    td_models <- data.frame(matrix(nrow = nc, ncol = 1))
+    fit <- data.frame(matrix(nrow = nc, ncol = 4))
     decomposition <- vector("list", nc)
+
+    colnames(td_series) <- colnames(td_series_stderr) <- colnames(td_bi) <- colnames(td_bi_stderr) <- colnames(benchmarks_ts)
+    colnames(bi_annual) <- colnames(bi_annual_f) <- colnames(bi_annual_falt) <- colnames(benchmarks_ts)
+    colnames(td_models) <- "model"
+    rownames(td_models) <- colnames(benchmarks_ts)
+    colnames(fit) <- c("Ols %Y on %X tstat", "Ols %Y on %X pval", "Ols %BI on %X tstat", "Ols %BI on %X pval")
+    rownames(fit) <- colnames(benchmarks_ts)
     names(decomposition) <- colnames(benchmarks_ts)
 
     for(i in 1:nc){
 
         ## Data
-        bnamei<-if (is.matrix(benchmarks_ts)) colnames(benchmarks_ts)[i] else "series"
-        yi<-if (is.matrix(benchmarks_ts)) benchmarks_ts[,i,drop=FALSE] else benchmarks_ts
-        xi<-match_indicators(bnamei, indicators_ts)
-        xi1<-if (is.matrix(xi)) xi[,1] else xi
-        xi1_is<-ts(xi1, frequency = freq, start = start(yi), end = c(end(yi)[1], freq))
-        ne<-length(xi1)-length(xi1_is)
+        bnamei <- if (is.mts(benchmarks_ts)) colnames(benchmarks_ts)[i] else "series"
+
+        yid <- if (is.mts(benchmarks_ts)) benchmarks_ts[, i, drop=FALSE] else benchmarks_ts
+        xid <- match_indicators(bnamei, indicators_ts)
+        yi <- zoo::na.trim(yid)
+        xi <- zoo::na.trim(xid)
+        if (anyNA(yi) || anyNA(xi))
+            stop(paste0(bnamei, "inner missing observations are not handled"), call. = FALSE)
+        if(start(xi)[1] < start(yi)[1])
+            stop(paste0(bnamei, ": benchmark and indicator period don't match"), call. = FALSE)
+        if(end(yi)[1] < end(benchmarks_ts)[1]){
+            xi <- window(xi, end = c(end(yi)[1], freq))
+        }
+
+        xi1 <- if (is.mts(xi)) xi[,1] else xi
+        xi1_in_sample <- window(xi1, start = start(yi), end = c(end(yi)[1], freq))
+        n_ext <- length(xi1) - length(xi1_in_sample)
 
         ## Annual BI ratios
-        xi_main<-if (is.matrix(xi)) xi[,1] else xi
-        biYi <- calc_annual_bi_ratio(yi, xi_main, conversion)
+        biYi <- calc_annual_bi_ratio(yi, xi1, conversion)
 
-        ## Select model
+        ## Model selection
         if (is.list(model)){
-            modi<-tolower(model[names(model)==bnamei])
+            modi <- tolower(model[names(model) == bnamei])
             if (length(modi) == 0){
-                modi<-"mbdenton"
+                modi <- "mbdenton"
                 warning(paste0(bnamei, ": model not defined. mbDenton is used by default."), call. = FALSE)
             }
         } else {
-            modi<-tolower(model)
+            modi <- tolower(model)
         }
         if (!modi %in% c("mbdenton", "chow-lin", "fernandez", "litterman", "chow-lin_no_cst")){
-            modi<-"mbdenton"
+            modi <- "mbdenton"
             warning(paste0(bnamei, ": model not allowed. mbDenton was used instead by default."), call. = FALSE)
         }
 
         if (modi == "mbdenton" && is.matrix(xi)){
-            xi<-xi[,1]
+            xi <- xi[,1]
             warning(paste0(bnamei, ": mbDenton do not handle multiple indicators. Only the first indicator is considered."), call. = FALSE)
         }
 
         ## Outliers
         if (is.null(outliers)){
-            outli<-outli_int<-NULL
+            outli <- outli_int <- NULL
         } else {
             if (bnamei %in% names(outliers)){
-                outli_int<-outliers[names(outliers)==bnamei][[1]]
-                outli_char<-names(outli_int)
-                outli<-sapply(outli_char, function(x) decimal_date2(as.numeric(substr(x,1,4)), as.numeric(substr(x,5,6)), freq))
+                outli_int <- outliers[names(outliers)==bnamei][[1]]
+                outli_char <- names(outli_int)
+                outli <- sapply(outli_char,
+                                function(x) decimal_date2(as.numeric(substr(x,1,4)), as.numeric(substr(x,5,6)), freq))
             } else {
-                outli<-outli_int<-NULL
+                outli <- outli_int <- NULL
+            }
+
+            if(!is.null(outli)){
+                for(k in 1:length(outli)){
+                    outli_yr <- as.numeric(substr(outli[k], 1, 4))
+                    if(outli_yr < start(yi)[1] || outli_yr > end(yi)[1]){
+                        outli <- outli[-k]
+                        outli_int <- outli_int[-k]
+                        warning(paste0(bnamei, ": Some outliers are defined outside the domain. Those are ignored."), call. = FALSE)
+                    }
+                }
+                if(length(outli) == 0) outli <- outli_int <- NULL
             }
         }
 
         ## Fixed disagregated BI
         if (is.null(disagBIfixed)){
-            dBIfixi<-NULL
+            dBIfixi <- NULL
         } else {
             if (bnamei %in% names(disagBIfixed)){
-                dBIfixi_value<-disagBIfixed[names(disagBIfixed)==bnamei][[1]]
-                dBIfixi_date_char<-names(dBIfixi_value)
-                dBIfixi_date<-sapply(dBIfixi_date_char, function(x) decimal_date2(as.numeric(substr(x,1,4)), as.numeric(substr(x,5,6)), freq))
-                dBIfixi<-cbind(period=dBIfixi_date, bi_ratio=dBIfixi_value)
+                dBIfixi_value <- disagBIfixed[names(disagBIfixed) == bnamei][[1]]
+                dBIfixi_date_char <- names(dBIfixi_value)
+                dBIfixi_date <- sapply(dBIfixi_date_char,
+                                       function(x) decimal_date2(as.numeric(substr(x,1,4)), as.numeric(substr(x,5,6)), freq))
+                dBIfixi <- cbind(period = dBIfixi_date, bi_ratio = dBIfixi_value)
 
-                if (length(dBIfixi_value)%%freq != 0){
+                if (length(dBIfixi_value) %% freq != 0){
                     warning(paste0(bnamei, ": the fixed disaggregated BI ratio provided do not cover the entire year. They are ignored for the series."), call. = FALSE)
-                    dBIfixi<-NULL
+                    dBIfixi <- NULL
                 }
             } else {
-                dBIfixi<-NULL
+                dBIfixi <- NULL
+            }
+
+            if(!is.null(dBIfixi)){
+                for(k in nrow(dBIfixi):1){
+                    dBIfixi_yr <- floor(dBIfixi[k,1])
+                    if(dBIfixi_yr < start(yi)[1] || dBIfixi_yr > end(yi)[1]){
+                        dBIfixi <- dBIfixi[-k,, drop = FALSE]
+                    }
+                }
+                if(length(dBIfixi) == 0) dBIfixi <- NULL
             }
         }
 
+
+        ## Critical value for forecasting annual BI
+        nobs_bench <- min(length(yi), 100)
+        qx <- table_rw[series_length == nobs_bench, get(forecastBI.quantile)]
+        if(length(qx) == 0) qx <- NA
+
         ## Forecast annual BI
-        if (forecastBI == "none"){
-            fbiYi<-list(f=NULL,falt=NULL)
+        if (forecastBI == "none" || end(yi)[1] < end(benchmarks_ts)[1]){
+            fbiYi <- list(f = NULL, falt = NULL)
         } else if (forecastBI == "auto"){
-            fbiYi<- if (modi == "mbdenton") forecast_annual_bi(biYi,critical_value=qx) else list(f=NULL,falt=NULL)
+            fbiYi <- if (modi == "mbdenton")
+                forecast_annual_bi(biYi, critical_value = qx)
+            else
+                list(f = NULL, falt = NULL)
         } else if (forecastBI == "userdefined+none"){
-            f_user<-forecastBI.values[names(forecastBI.values)==bnamei]
-            f<-if (!length(f_user)==0) f_user[[1]] else NULL
-            fbiYi<-list(f=f, falt=NULL)
+            f_user <- forecastBI.values[names(forecastBI.values) == bnamei]
+            f <- if (!length(f_user) == 0) f_user[[1]] else NULL
+            fbiYi <- list(f = f, falt = NULL)
         } else if (forecastBI == "userdefined+auto"){
-            f_user<-forecastBI.values[names(forecastBI.values)==bnamei]
-            if (!length(f_user)==0){
-                f<-f_user[[1]]
-                falt<-forecast_annual_bi(biYi,critical_value=qx)[[1]]
+            f_user <- forecastBI.values[names(forecastBI.values) == bnamei]
+            if (!length(f_user) == 0){
+                f <- f_user[[1]]
+                falt <- forecast_annual_bi(biYi, critical_value=qx)[[1]]
             } else {
                 if (modi == "mbdenton"){
-                    f<-forecast_annual_bi(biYi,critical_value=qx)[[1]]
-                    falt<-forecast_annual_bi(biYi,critical_value=qx)[[2]]
+                    f <- forecast_annual_bi(biYi, critical_value = qx)[[1]]
+                    falt <- forecast_annual_bi(biYi, critical_value = qx)[[2]]
                 } else {
-                    f<-falt<-NULL
+                    f <- falt <- NULL
                 }
             }
-            fbiYi<-list(f=f,falt=falt)
+            fbiYi <- list(f=f, falt=falt)
         }
 
         ## Model-based Denton
@@ -288,51 +326,67 @@ multiTD <- function(benchmarks,
 
             ### Standard model-based Denton
             if (is.null(fbiYi[[1]])){
-                rslti<-mbdenton(xi, yi, outliers=outli, outliers.intensity=outli_int, manual_disagBI=dBIfixi, conversion, series_name = bnamei)
+                rslti <- mbdenton(
+                    xi,
+                    yi,
+                    outliers = outli,
+                    outliers.intensity = outli_int,
+                    manual_disagBI = dBIfixi,
+                    conversion,
+                    series_name = bnamei
+                )
 
-                bi<-rslti[["beta"]]
-                ebi<-rslti[["betaSD"]]
-                disag<-rslti[["disag"]]
-                edisag<-xi*ebi
-                parameters<-cbind(beta_t=bi, stderr=ebi)
-                decomp<-list(regeffect = disag, smoothingpart = ts(rep(0,length(disag)), start=start(disag), frequency = frequency(disag)))
-                ll<-rslti[["ll"]]
-                enhanced<-FALSE
+                bi <- rslti[["beta"]]
+                ebi <- rslti[["betaSD"]]
+                disag <- rslti[["disag"]]
+                edisag <- xi * ebi
+                parameters <- cbind(beta_t = bi, stderr = ebi)
+                decomp <- list(regeffect = disag, smoothingpart = ts(rep(0,length(disag)), start=start(disag), frequency = frequency(disag)))
+                ll <- rslti[["ll"]]
+                enhanced <- FALSE
 
-                if (ne >= freq){
-                    f_y1<-calc_implicit_forecast_annual_BI_ratio(disag, xi, start=end(yi)[1]+1, conversion=conversion)
-                    fbiYi<-list(f=c("Y+1"=f_y1[1], "Y+2"=f_y1[2]), falt=NULL)
+                if (n_ext >= freq){
+                    f_y1 <- calc_implicit_forecast_annual_BI_ratio(disag, xi, start=end(yi)[1] + 1, conversion = conversion)
+                    fbiYi <- list(f = c("Y+1"=f_y1[1], "Y+2"=f_y1[2]), falt = NULL)
                 }
             }
 
             ### 'Enhanced' model-based Denton
             else {
                 #### extension of benchmark series when indicator covers the full year T+1
-                if ((ne>freq && ne<freq*2) || (ne==freq && !freezeT1)){
-                    yi_enhanced<-extend_benchmark_series(yi, xi, fbiYi[[1]][1], conversion)
-                } else if (ne>=freq*2){
+                if ((n_ext > freq && n_ext < freq * 2) || (n_ext == freq && !freezeT1)) {
+                    yi_enhanced <- extend_benchmark_series(yi, xi, fbiYi[[1]][1], conversion)
+                } else if (n_ext >= freq * 2) {
                     stop("Out-of-sample period with enhanced model-based Denton must be < 2 years.")
                 } else {
-                    yi_enhanced<-yi
+                    yi_enhanced <- yi
                 }
 
                 #### run model
-                rslti<-mbdenton(xi, yi_enhanced, outliers=outli, outliers.intensity=outli_int, manual_disagBI=dBIfixi, conversion, series_name = bnamei)
+                rslti <- mbdenton(
+                    xi,
+                    yi_enhanced,
+                    outliers = outli,
+                    outliers.intensity = outli_int,
+                    manual_disagBI = dBIfixi,
+                    conversion,
+                    series_name = bnamei
+                )
 
                 #### extrapolation
-                disagbi_base<-window(rslti[["beta"]], end=c(end(yi_enhanced)[1],freq))
-                fbiYi_touse<-if (length(yi_enhanced)>length(yi)) as.numeric(fbiYi[[1]][2]) else as.numeric(fbiYi[[1]][1])
-                disagbi<-extrapolate_infra_annual_BI_ratio(disagbi_base, fbiYi_touse, freq, yi_enhanced, xi, dBIfixi, conversion)
+                disagbi_base <- window(rslti[["beta"]], end = c(end(yi_enhanced)[1], freq))
+                fbiYi_touse <- if (length(yi_enhanced) > length(yi)) as.numeric(fbiYi[[1]][2]) else as.numeric(fbiYi[[1]][1])
+                disagbi <- extrapolate_infra_annual_BI_ratio(disagbi_base, fbiYi_touse, freq, yi_enhanced, xi, dBIfixi, conversion)
 
-                bi<-window(disagbi,frequency=freq,end=end(xi))
-                ebi<-ts(c(window(rslti[["betaSD"]],frequency=freq,end=c(end(yi_enhanced)[1]-1,freq)), rep(NA,(ne+freq))),
-                        frequency=freq,start=start(xi), end=end(xi))
-                disag<-xi*bi
-                edisag<-xi*ebi
-                parameters<-cbind(beta_t=bi, stderr=ebi)
-                decomp<-list(regeffect = disag, smoothingpart = ts(rep(0,length(disag)), start=start(disag), frequency = frequency(disag)))
-                ll<-rslti[["ll"]]
-                enhanced<-TRUE
+                bi <- window(disagbi, frequency = freq, end = end(xi))
+                ebi <- ts(c(window(rslti[["betaSD"]], frequency=freq, end=c(end(yi_enhanced)[1]-1,freq)), rep(NA,(n_ext+freq))),
+                          frequency = freq,start = start(xi), end = end(xi))
+                disag <- xi * bi
+                edisag <- xi * ebi
+                parameters <- cbind(beta_t = bi, stderr = ebi)
+                decomp <- list(regeffect = disag, smoothingpart = ts(rep(0,length(disag)), start=start(disag), frequency = frequency(disag)))
+                ll <- rslti[["ll"]]
+                enhanced <- TRUE
             }
 
             ## Chow-Lin and variants
@@ -345,7 +399,7 @@ multiTD <- function(benchmarks,
                 warning(paste0(bnamei, ": Fixed values for the disaggregated BI ratios are only possible with mbDenton. The value(s) provided by the user were ignored for this series."), call. = FALSE)
             }
             if (!is.null(fbiYi[[1]])){
-                fbiYi<-list(f=NULL,falt=NULL)
+                fbiYi <- list(f = NULL, falt = NULL)
                 warning(paste0(bnamei, ": Forecast of annual BI ratio are only handled with mbDenton. The forecast values were ignored for this series."), call. = FALSE)
             }
 
@@ -360,27 +414,27 @@ multiTD <- function(benchmarks,
 
             if (length(unique(xi)) > 1) {
                 is_avg <- ifelse(conversion == "Average", TRUE, FALSE)
-                rslti<-temporal_disaggregation(yi, constant = is_cst, indicators = as.list(xi), model = modi_short, average = is_avg)
+                rslti <- temporal_disaggregation(yi, constant = is_cst, indicators = as.list(xi), model = modi_short, average = is_avg)
             } else {
                 nfcsts <- length(xi) - length(yi) * freq
-                rslti<-temporal_disaggregation(yi, constant = is_cst, model = modi_short, average = is_avg, nfcsts = nfcsts) # case without indicator
+                rslti <- temporal_disaggregation(yi, constant = is_cst, model = modi_short, average = is_avg, nfcsts = nfcsts) # case without indicator
             }
 
-            disag<-rslti$estimation$disagg
-            edisag<-rslti$estimation$edisagg
-            bi<-disag/xi1 # BI ratio of the first indicator
-            ebi<-edisag/xi1
-            parameters<-list(rho = rslti$estimation$parameter, coef = rslti$regression$model, cov = rslti$regression$cov)
+            disag <- rslti$estimation$disagg
+            edisag <- rslti$estimation$edisagg
+            bi <- disag / xi1 # BI ratio of the first indicator
+            ebi <- edisag / xi1
+            parameters <- list(rho = rslti$estimation$parameter, coef = rslti$regression$model, cov = rslti$regression$cov)
             if(is.null(rslti$estimation$regeffect)){
-                decomp<-list(regeffect = ts(rep(0, length(disag)), start = disag, frequency = frequency(disag)),
+                decomp <- list(regeffect = ts(rep(0, length(disag)), start = disag, frequency = frequency(disag)),
                              smoothingpart = disag)
             }else{
-                decomp<-list(regeffect = rslti$estimation$regeffect, smoothingpart = disag - rslti$estimation$regeffect)
-                ll<-rslti$likelihood$ll
+                decomp <- list(regeffect = rslti$estimation$regeffect, smoothingpart = disag - rslti$estimation$regeffect)
+                ll <- rslti$likelihood$ll
             }
-            if (ne >= freq){
-                f_y1<-calc_implicit_forecast_annual_BI_ratio(disag, xi1, start=end(yi)[1]+1, conversion=conversion)
-                fbiYi<-list(f=c("Y+1"=f_y1[1], "Y+2"=f_y1[2]), falt=NULL)
+            if (n_ext >= freq){
+                f_y1 <- calc_implicit_forecast_annual_BI_ratio(disag, xi1, start=end(yi)[1]+1, conversion=conversion)
+                fbiYi <- list(f = c("Y+1"=f_y1[1], "Y+2"=f_y1[2]), falt = NULL)
             }
         }
 
@@ -388,8 +442,8 @@ multiTD <- function(benchmarks,
 
         ## Relevancy of outliers
         if (modi == "mbdenton" && !is.null(outli)){
-            yi_used<-if (enhanced) yi_enhanced else yi
-            rsltiNO<-mbdenton(xi, yi_used, outliers=NULL, manual_disagBI=dBIfixi, conversion=conversion, series_name = bnamei, include_warnings = FALSE)
+            yi_used <- if (enhanced) yi_enhanced else yi
+            rsltiNO <- mbdenton(xi, yi_used, outliers=NULL, manual_disagBI=dBIfixi, conversion=conversion, series_name = bnamei, include_warnings = FALSE)
             lr_test(ll1=ll, ll2=rsltiNO$ll, bnamei)
         }
 
@@ -403,22 +457,30 @@ multiTD <- function(benchmarks,
         ols_biYi <- calc_fit_growth(biYi, xi1)
 
         # IV. Fill output
-        out[[i]]<-list(td_model=modi, disag=disag, edisag=edisag, bi=bi, ebi = ebi,
-                       parameters=parameters, decomposition=decomp, ll=ll)
-        names(out)[i]<-bnamei
-        td_series[,i]<-disag
-        td_series_stderr[,i]<-edisag
-        td_bi[,i]<-bi
-        td_bi_stderr[,i]<-ebi
-        bi_annual[,i]<-biYi
-        if (!is.null(fbiYi$f)) bi_annual_f[,i]<-fbiYi$f
-        if (!is.null(fbiYi$falt)) bi_annual_falt[,i]<-fbiYi$falt
-        td_models[i,1]<-modi
-        fit[i,1]<-ols_yi$t_stat
-        fit[i,2]<-ols_yi$p_value
-        fit[i,3]<-ols_biYi$t_stat
-        fit[i,4]<-ols_biYi$p_value
-        decomposition[[i]]<-decomp
+        out[[i]] <- list(
+            td_model = modi,
+            disag = disag,
+            edisag = edisag,
+            bi = bi,
+            ebi = ebi,
+            parameters = parameters,
+            decomposition = decomp,
+            ll = ll
+        )
+        names(out)[i] <- bnamei
+        td_series[, i] <- align_ts_with_na(disag, indicators_ts)
+        td_series_stderr[, i] <- align_ts_with_na(edisag, indicators_ts)
+        td_bi[, i] <- align_ts_with_na(bi, indicators_ts)
+        td_bi_stderr[, i] <- align_ts_with_na(ebi, indicators_ts)
+        bi_annual[, i] <- align_ts_with_na(biYi, benchmarks_ts)
+        if (!is.null(fbiYi$f)) bi_annual_f[, i] <- fbiYi$f
+        if (!is.null(fbiYi$falt)) bi_annual_falt[, i] <- fbiYi$falt
+        td_models[i, 1] <- modi
+        fit[i, 1] <- ols_yi$t_stat
+        fit[i, 2] <- ols_yi$p_value
+        fit[i, 3] <- ols_biYi$t_stat
+        fit[i, 4] <- ols_biYi$p_value
+        decomposition[[i]] <- decomp
     }
 
     out$call <- cl
@@ -519,58 +581,63 @@ multiTD_fromXLSX <- function(path_data,
 
     # I. Import input and formatting
 
-    benchmarks<-as.data.frame(read_excel(path_data, sheet = "benchmarks"))
-    indicators<-as.data.frame(read_excel(path_data, sheet = "indicators"))
+    benchmarks <- as.data.frame(read_excel(path_data, sheet = "benchmarks"))
+    indicators <- as.data.frame(read_excel(path_data, sheet = "indicators"))
 
-    models<-as.data.frame(read_excel(path_data, sheet = "models"))
-    if (nrow(models) != 0){
-        models_list_form<-split(models$model, seq_len(nrow(models)))
-        names(models_list_form)<-models$series_name
+    models <- as.data.frame(read_excel(path_data, sheet = "models"))
+    if (nrow(models) != 0) {
+        models_list_form <- split(models$model, seq_len(nrow(models)))
+        names(models_list_form) <- models$series_name
     } else {
         warning("No model defined in the input file. mbDenton was used for each series by default.", call. = FALSE)
-        models_list_form<-"mbDenton"
+        models_list_form <- "mbDenton"
     }
 
-    outliers<-as.data.frame(read_excel(path_data, sheet = "outliers"))
-    if (nrow(outliers) != 0){
-        outliers_list<-split(outliers[,c("period","intensity")], outliers$series_name)
-        outliers_list_form<-lapply(outliers_list, function(x)  df_to_vector(x))
+    outliers <- as.data.frame(read_excel(path_data, sheet = "outliers"))
+    if (nrow(outliers) != 0) {
+        outliers_list <- split(outliers[, c("period", "intensity")], outliers$series_name)
+        outliers_list_form <- lapply(outliers_list, function(x) df_to_vector(x))
     } else {
-        outliers_list_form<-NULL
+        outliers_list_form <- NULL
     }
 
-    disag_BI_fixed<-as.data.frame(read_excel(path_data, sheet = "disag_BI_fixed"))
-    if (nrow(disag_BI_fixed) != 0){
-        disag_BI_fixed_list<-split(disag_BI_fixed[,c("period","value")], disag_BI_fixed$series_name)
-        disag_BI_fixed_list_form<-lapply(disag_BI_fixed_list, function(x)  df_to_vector(x))
+    disag_BI_fixed <- as.data.frame(read_excel(path_data, sheet = "disag_BI_fixed"))
+    if(inherits(disag_BI_fixed$period, "POSIXct") || inherits(disag_BI_fixed$period, "Date")){
+        disag_BI_fixed$period <- format(disag_BI_fixed$period, "%Y%m%d")
+    }
+    if (nrow(disag_BI_fixed) != 0) {
+        disag_BI_fixed_list <- split(disag_BI_fixed[, c("period", "value")], disag_BI_fixed$series_name)
+        disag_BI_fixed_list_form <- lapply(disag_BI_fixed_list, function(x) df_to_vector(x))
     } else {
-        disag_BI_fixed_list_form<-NULL
+        disag_BI_fixed_list_form <- NULL
     }
 
-    forecast_annual_BI<-as.data.frame(read_excel(path_data, sheet = "forecast_annual_BI"))
-    if (nrow(forecast_annual_BI) != 0){
-        colnames(forecast_annual_BI)<-c("series_name","Y+1","Y+2")
-        forecast_annual_BI_list<-split(forecast_annual_BI[,2:3], seq_len(nrow(forecast_annual_BI)))
-        forecast_annual_BI_list_form<-lapply(forecast_annual_BI_list, function(x) unlist(x[1,]))
-        names(forecast_annual_BI_list_form)<- forecast_annual_BI$series_name
+    forecast_annual_BI <- as.data.frame(read_excel(path_data, sheet = "forecast_annual_BI"))
+    if (nrow(forecast_annual_BI) != 0) {
+        colnames(forecast_annual_BI) <- c("series_name", "Y+1", "Y+2")
+        forecast_annual_BI_list <- split(forecast_annual_BI[, 2:3], seq_len(nrow(forecast_annual_BI)))
+        forecast_annual_BI_list_form <- lapply(forecast_annual_BI_list, function(x) unlist(x[1, ]))
+        names(forecast_annual_BI_list_form) <- forecast_annual_BI$series_name
     } else {
-        forecast_annual_BI_list_form<-NULL
+        forecast_annual_BI_list_form <- NULL
     }
 
 
     # II. Run main function
 
-    rslt<-multiTD(benchmarks,
-                  indicators,
-                  model=models_list_form,
-                  outliers=outliers_list_form,
-                  disagBIfixed=disag_BI_fixed_list_form,
-                  forecastBI,
-                  forecastBI.values=forecast_annual_BI_list_form,
-                  forecastBI.quantile,
-                  freezeT1,
-                  conversion=conversion,
-                  path_xlsx = path_output)
+    rslt <- multiTD(
+        benchmarks,
+        indicators,
+        model = models_list_form,
+        outliers = outliers_list_form,
+        disagBIfixed = disag_BI_fixed_list_form,
+        forecastBI,
+        forecastBI.values = forecast_annual_BI_list_form,
+        forecastBI.quantile,
+        freezeT1,
+        conversion = conversion,
+        path_xlsx = path_output
+    )
 
     return(rslt)
 }
@@ -756,11 +823,13 @@ calc_fit_growth <- function(y, x){
         res <- summary(fit)
 
         ## collect tstat
-        t_stat <- round(res$coefficients[2,3], 3)
-        p_value <- round(res$coefficients[2,4], 5)
+        t_stat <- try(round(res$coefficients[2,3], 3), silent = TRUE)
+        if (inherits(t_stat, "try-error"))  t_stat <- NaN
+        p_value <- try(round(res$coefficients[2,4], 5), silent = TRUE)
+        if (inherits(p_value, "try-error")) p_value <- NaN
     }
 
-    return(list(t_stat=t_stat,p_value=p_value))
+    return(list(t_stat=t_stat, p_value=p_value))
 }
 
 # Convert 2 columns data.frame to named vector
@@ -769,3 +838,33 @@ df_to_vector<-function(x){
     names(x_form) <- x[,1]
     return(x_form)
 }
+
+
+# insert NA values in a ts object to fill the gap with another time series
+align_ts_with_na <- function(ts_target, ts_reference) {
+    if (!inherits(ts_target, "ts") || !inherits(ts_reference, "ts")) {
+        stop("Both inputs must be 'ts' objects.")
+    }
+
+    freq <- frequency(ts_reference)
+
+    # Get full time range from reference
+    ref_time <- time(ts_reference)
+    full_time <- seq(from = min(ref_time), to = max(ref_time), by = 1 / freq)
+
+    # Create a full-length NA vector
+    aligned_values <- rep(NA, length(full_time))
+
+    # Match time points
+    target_time <- time(ts_target)
+    match_idx <- match(round(target_time, 10), round(full_time, 10))  # rounding to avoid floating point mismatch
+
+    aligned_values[match_idx] <- ts_target
+
+    # Create aligned ts object
+    start_year <- floor(min(full_time))
+    start_period <- round((min(full_time) - start_year) * freq + 1)
+
+    ts(aligned_values, start = c(start_year, start_period), frequency = freq)
+}
+

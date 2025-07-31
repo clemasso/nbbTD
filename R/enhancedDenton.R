@@ -4,36 +4,43 @@
 # H0: RW process / HA: an alternative model
 forecast_annual_bi <- function(bi_ts, critical_value){
 
-  # normalization with mean=100 (to avoid problems with negative values)
-  bi_norm<-(bi_ts - mean(bi_ts))/sd(bi_ts) + 100
+  if(is.na(critical_value)){
+      f_mod1 <- forecast_series(bi_ts, "rw", fh = 2, wd = NA)
+      f_mod2 <- forecast_series(bi_ts, "rw", fh = 2, wd = NA)
+      names(f_mod1) <- names(f_mod2) <- c("Y+1", "Y+2")
+  } else {
+      # normalization with mean=100 (to avoid problems with negative values)
+      bi_norm <- (bi_ts - mean(bi_ts)) / sd(bi_ts) + 100
 
-  # cross-validation rmse
-  rmseCV<-CalcCVRMSEOfSelectedModels(bi_norm)
+      # cross-validation rmse
+      rmseCV <- CalcCVRMSEOfSelectedModels(bi_norm)
 
-  if (!all(is.na(rmseCV))){
-    # model selection
-    pred_score<-calculate_pred_score(rmseCV)
-    sn<-as.numeric(pred_score[["score"]])
-    alt_mod<-pred_score[["alt_mod"]]
-    alt_wd<-pred_score[["alt_wd"]]
+      if (!all(is.na(rmseCV))){
+          # model selection
+          pred_score <- calculate_pred_score(rmseCV)
+          sn <- as.numeric(pred_score[["score"]])
+          alt_mod <- pred_score[["alt_mod"]]
+          alt_wd <- pred_score[["alt_wd"]]
 
-    mod1<-ifelse(sn < critical_value | is.na(sn), "rw", alt_mod)
-    if (mod1 == "rw"){
-      wd_mod1<-NA
-      mod2<-as.character(alt_mod)
-      wd_mod2<-alt_wd
-    } else {
-      wd_mod1<-alt_wd
-      mod2<-"rw"
-      wd_mod2<-NA
+          mod1 <- ifelse(sn < critical_value | is.na(sn), "rw", alt_mod)
+          if (mod1 == "rw"){
+              wd_mod1 <- NA
+              mod2 <- as.character(alt_mod)
+              wd_mod2 <- alt_wd
+          } else {
+              wd_mod1 <- alt_wd
+              mod2 <- "rw"
+              wd_mod2 <- NA
+          }
+
+          # forecast with selected model
+          f_mod1 <- forecast_series(bi_ts, mod1, fh = 2, wd = wd_mod1)
+          f_mod2 <- forecast_series(bi_ts, mod2, fh = 2, wd = wd_mod2)
+          names(f_mod1) <- names(f_mod2) <- c("Y+1", "Y+2")
     }
-
-    # forecast with selected model
-    f_mod1<-forecast_series(bi_ts, mod1, fh = 2, wd = wd_mod1)
-    f_mod2<-forecast_series(bi_ts, mod2, fh = 2, wd = wd_mod2)
-    names(f_mod1)<-names(f_mod2)<-c("Y+1","Y+2")
   }
-  return(list(f=f_mod1,falt=f_mod2))
+
+  return(list(f = f_mod1, falt = f_mod2))
 }
 
 # Calculate RMSE of cross validation errors for several forecasting models
@@ -263,7 +270,12 @@ forecast_series <- function(s, model = c("rw", "mean", "gmeang", "tramo",  "holt
     f <- as.vector(m$mean)
   } else stop("Model not supported")
 
-  if (anyNA(f)) warning(paste("Some series could not be forecasted", model))
+  # if (anyNA(f)) warning(paste("Some series could not be forecasted", model))
+  if (anyNA(f)){
+      m <- rwf(s, fh)
+      f <- as.vector(m$mean)
+      if (anyNA(f)) warning("Some series could not be forecasted")
+  }
 
   return(f)
 }
