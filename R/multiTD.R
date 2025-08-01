@@ -811,7 +811,7 @@ rho_test<-function(rho, series_name){
 calc_fit_growth <- function(y, x){
 
     if (length(unique(x)) == 1) {
-        t_stat <- p_value <- NA
+        t_stat <- p_value <- NaN
     } else {
         ## annual growth rates
         xY <- window(aggregate(x, nfreq = 1), start = start(y), end = end(y))
@@ -819,16 +819,19 @@ calc_fit_growth <- function(y, x){
         xYg <- xY / lag(xY,-1) - 1
 
         ## OLS
-        fit <- tslm(yg ~ xYg)
-        res <- summary(fit)
+        fit <- try(tslm(yg ~ xYg), silent = TRUE)
+        if (inherits(fit, "try-error")) {
+            t_stat <- p_value <- NaN
+        } else{
+            res <- summary(fit)
 
-        ## collect tstat
-        t_stat <- try(round(res$coefficients[2,3], 3), silent = TRUE)
-        if (inherits(t_stat, "try-error"))  t_stat <- NaN
-        p_value <- try(round(res$coefficients[2,4], 5), silent = TRUE)
-        if (inherits(p_value, "try-error")) p_value <- NaN
+            ## collect tstat
+            t_stat <- try(round(res$coefficients[2,3], 3), silent = TRUE)
+            if (inherits(t_stat, "try-error"))  t_stat <- NaN
+            p_value <- try(round(res$coefficients[2,4], 5), silent = TRUE)
+            if (inherits(p_value, "try-error")) p_value <- NaN
+        }
     }
-
     return(list(t_stat=t_stat, p_value=p_value))
 }
 
